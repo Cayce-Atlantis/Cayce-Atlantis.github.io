@@ -19,7 +19,7 @@
     <meta name="description" content="SSRF基础 概述  1）背景：互联网上的很多Web应用提供了从其他服务器（也可以是本地）获取数据的功能，使用用户指定的URL，Web应用可以获取图片、文件资源（下载或读取）。  2）定义：SSRF （Server-Side Request Forgery），服务器端请求伪造，是一种由攻击者构造请求，由服务端发起请求的安全漏洞。 请求伪造，顾名思义就是攻击者伪造正常的请求，以达到攻击的目的，就是常">
 <meta property="og:type" content="article">
 <meta property="og:title" content="java源代码审计-服务端请求伪造">
-<meta property="og:url" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/index.html">
+<meta property="og:url" content="https://cayce-atlantis.github.io/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/index.html">
 <meta property="og:site_name" content="Atlantis">
 <meta property="og:description" content="SSRF基础 概述  1）背景：互联网上的很多Web应用提供了从其他服务器（也可以是本地）获取数据的功能，使用用户指定的URL，Web应用可以获取图片、文件资源（下载或读取）。  2）定义：SSRF （Server-Side Request Forgery），服务器端请求伪造，是一种由攻击者构造请求，由服务端发起请求的安全漏洞。 请求伪造，顾名思义就是攻击者伪造正常的请求，以达到攻击的目的，就是常">
 <meta property="og:locale" content="en_US">
@@ -69,7 +69,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"cayce-atlantis.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -359,7 +359,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>java源代码审计-服务端请求伪造</div>
-      <div>http://example.com/2023/02/02/java源代码审计-服务端请求伪造/</div>
+      <div>https://cayce-atlantis.github.io/2023/02/02/java源代码审计-服务端请求伪造/</div>
     </div>
     <div class="license-meta">
       

@@ -19,23 +19,23 @@
     <meta name="description" content="XSS攻击通关之路前言：  之前去郑州学习的时候看了一套比较系统的XSS注入的视频，简直是要膜拜做这个视频的人，以前会的XSS注入测试跟着一比简直是关公门前耍大刀，不仅刷新了以前对这个注入的理解，还涨了不少姿势。看来以后这种学习大会一定要多去去见识见识，没有什么比这提升更快了我觉得。。。。。。 正文：  刚开始还是先在这里记录一下XSS注入的意义和危害吧：   XSS攻击又叫跨站脚本攻击，它是一种">
 <meta property="og:type" content="article">
 <meta property="og:title" content="XSS攻击通关之路">
-<meta property="og:url" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/index.html">
+<meta property="og:url" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/index.html">
 <meta property="og:site_name" content="Atlantis">
 <meta property="og:description" content="XSS攻击通关之路前言：  之前去郑州学习的时候看了一套比较系统的XSS注入的视频，简直是要膜拜做这个视频的人，以前会的XSS注入测试跟着一比简直是关公门前耍大刀，不仅刷新了以前对这个注入的理解，还涨了不少姿势。看来以后这种学习大会一定要多去去见识见识，没有什么比这提升更快了我觉得。。。。。。 正文：  刚开始还是先在这里记录一下XSS注入的意义和危害吧：   XSS攻击又叫跨站脚本攻击，它是一种">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level2.jpg">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level3.jpg">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level5.jpg">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level8.jpg">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level11_1.jpg">
-<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/QQ.png">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level2.jpg">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level3.jpg">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level5.jpg">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level8.jpg">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level11_1.jpg">
+<meta property="og:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/QQ.png">
 <meta property="article:published_time" content="2021-05-09T06:07:01.000Z">
 <meta property="article:modified_time" content="2023-02-05T08:29:23.237Z">
 <meta property="article:author" content="Cayce">
 <meta property="article:tag" content="xss">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg">
+<meta name="twitter:image" content="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg">
   
   
   
@@ -77,7 +77,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+    var CONFIG = {"hostname":"cayce-atlantis.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -411,7 +411,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>XSS攻击通关之路</div>
-      <div>http://example.com/2021/05/09/XSS攻击通关之路/</div>
+      <div>https://cayce-atlantis.github.io/2021/05/09/XSS攻击通关之路/</div>
     </div>
     <div class="license-meta">
       
