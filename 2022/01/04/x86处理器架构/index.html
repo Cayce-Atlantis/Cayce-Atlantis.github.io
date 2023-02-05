@@ -1,0 +1,961 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一、CPU处理器架构和工作原理假想机的基本设计中央处理器（CPU）是进行算术和逻辑操作的部件，包含有限数量的存储位置——寄存器（register），一个高频时钟、一个控制单元和一个算术逻辑单元。  其中：  时钟（clock）对CPU内部操作与系统其他组件进行同步。 控制单元（control unit，CU）协调参与机器指令执行的步骤序列。 算术逻辑单元（arithmetic logic unit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="x86处理器架构">
+<meta property="og:url" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="一、CPU处理器架构和工作原理假想机的基本设计中央处理器（CPU）是进行算术和逻辑操作的部件，包含有限数量的存储位置——寄存器（register），一个高频时钟、一个控制单元和一个算术逻辑单元。  其中：  时钟（clock）对CPU内部操作与系统其他组件进行同步。 控制单元（control unit，CU）协调参与机器指令执行的步骤序列。 算术逻辑单元（arithmetic logic unit">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G10244344.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G10400A9.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G105154O.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G35644562.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G35P0916.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G4034NE.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G61434K0.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42P94340641.png">
+<meta property="og:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42P9491MV.png">
+<meta property="article:published_time" content="2022-01-04T02:25:20.000Z">
+<meta property="article:modified_time" content="2022-01-13T03:19:47.506Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G10244344.png">
+  
+  
+  
+  <title>x86处理器架构 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="x86处理器架构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-01-04 10:25" pubdate>
+          January 4, 2022 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          97 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">x86处理器架构</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="一、CPU处理器架构和工作原理"><a href="#一、CPU处理器架构和工作原理" class="headerlink" title="一、CPU处理器架构和工作原理"></a>一、CPU处理器架构和工作原理</h1><h3 id="假想机的基本设计"><a href="#假想机的基本设计" class="headerlink" title="假想机的基本设计"></a>假想机的基本设计</h3><p>中央处理器（CPU）是进行算术和逻辑操作的部件，包含有限数量的存储位置——寄存器（register），一个高频时钟、一个控制单元和一个算术逻辑单元。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G10244344.png" srcset="/img/loading.gif" lazyload alt="微计算机框图"></p>
+<p>其中：</p>
+<ul>
+<li>时钟（clock）对CPU内部操作与系统其他组件进行同步。</li>
+<li>控制单元（control unit，CU）协调参与机器指令执行的步骤序列。</li>
+<li>算术逻辑单元（arithmetic logic unit，ALU）执行算术运算，如加法和减法，以及逻辑运算，如AND（与）、OR（或）和NOT（非）。</li>
+</ul>
+<p>CPU通过主板上CPU插座的引脚与计算机其他部分相连。大部分引脚连接的是数据总线、控制总线和地址总线。</p>
+<p>内存存储单元（memory storage unit）用于在远程运行时保存指令与数据。它接受来自CPU的数据请求，将数据从随机存储器（RAM）传输到CPU，并从CPU传输到内存。</p>
+<p>由于所有的数据处理都在CPU内进行，因此保存在内存中的程序在执行前需要被复制到CPU中。程序指令在复制到CPU时，可以一次复制一条，也可以一次复制多条。</p>
+<p>总线（bus）是一组并行线，用于将数据从计算机一个部分传送到另一个部分。一个计算机系统通常包含四类总线：数据类、I/O类、控制类和地址类。</p>
+<p>数据总线（data bus）在CPU和内存之间传输指令和数据。I/O总线在CPU和系统输入/输出设备之间传输数据。控制总线（control bus）用二进制信号对所有连接在系统总线上设备的行为进行同步。当前执行指令在CPU和内存之间传输数据时，地址总线（address bus）用于保存指令和数据的地址。</p>
+<p>时钟与CPU和系统总线相关的每一个操作都是由一个恒定速率的内部时钟脉冲来进行同步。机器指令的基本时间单位是机器周期（machine cycle）或 时钟周期（clock cycle）。</p>
+<p>一个时钟周期的时长是一个完整时钟脉冲所需要的时间。下图中，一个时钟周期被描绘为两个相邻下降沿之间的时间：</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G10400A9.png" srcset="/img/loading.gif" lazyload alt="一个时钟周期"></p>
+<p>时钟周期持续时间用时钟速度的倒数来计算，而时钟速度则用每秒振荡数来衡量。例如，一个每秒振荡10亿次（1GHz）的时钟，其时钟周期为10 亿分之1秒（1纳秒）。</p>
+<p>执行一条机器指令最少需要一个时钟周期，有几个需要的时钟则超过了50个（比如8088处理器中的乘法指令）。由于在CPU、系统总线和内存电路之间存在速度差异，因此，需要访问内存的指令常常需要空时钟周期，也被称为等待状态（wait states）。</p>
+<h3 id="指令执行周期"><a href="#指令执行周期" class="headerlink" title="指令执行周期"></a>指令执行周期</h3><p>一条机器指令不会神奇地一下执行完成。CPU在执行一条机器指令时，需要经过一系列预先定义好的步骤，这些步骤被称为指令执行周期（instruction execution cycle）。</p>
+<p>假设现在指令指针寄存器中已经有了想要执行指令的地址，下面就是执行步骤：</p>
+<ol>
+<li>CPU从被称为指令队列（instruction queue）的内存区域取得指令，之后立即增加指令指针的值。</li>
+<li>CPU对指令的二进制位模式进行译码。这种位模式可能会表示该指令有操作数（输入值）。</li>
+<li>如果有操作数，CPU就会从寄存器和内存中取得操作数。有时，这步还包括了地址计算。</li>
+<li>使用步骤3得到的操作数，CPU执行该指令。同时更新部分状态标志位，如零标志（Zero）、进位标志（Carry）和溢出标志（Overflow）。</li>
+<li>如果输出操作数也是该指令的一部分，则CPU还需要存放其执行结果。</li>
+</ol>
+<p>通常将上述听起来很复杂的过程简化为三个步骤：取指（Fetch）、译码（Decode）和执行（Execute）。操作数（operand）是指操作过程中输入或输出的值。例如、表达式Z=X+Y有两个输入操作数（X和Y），一个输出操作数（Z）。</p>
+<p>下图是一个典型CPU中的数据流框图。该图表现了在指令执行周期中相互交互部件之间的关系。在从内部读取程序指令之前，将其地址放到地址总线上。然后，内存控制器将所需代码送到数据总线上，存入代码高速缓存（code cache）。指令指针的值决定下一条将要执行的指令。指令有指令译码器分析，并产生相应的数值信号送到控制单元，其协调ALU和浮点单元。虽然图中没有画出控制总线，但是其上传输的信号用系统时钟协调不同CPU部件之间的数据传输。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G105154O.png" srcset="/img/loading.gif" lazyload alt="简化的CPU框图"></p>
+<h3 id="读取内存"><a href="#读取内存" class="headerlink" title="读取内存"></a>读取内存</h3><p>作为一个常见现象，计算机从内存读取数据比从内存寄存器读取数据要慢的多。这是因为从内存读取一个值，需要经过下述步骤：</p>
+<ul>
+<li>将想要读取的值的地址放到地址总线上。</li>
+<li>设置处理器RD（读取）引脚（改变RD的值）。</li>
+<li>等待一个时钟周期给存储芯片进行响应 。</li>
+<li>将数据从数据总线复制到目标操作数。</li>
+</ul>
+<p>上述每一步常常只需要一个时钟周期，时钟周期是基于处理器内固定速率时钟节拍的一种时间测量方法。计算机的CPU通常是用其时钟速率来描述。例如，速率为1.2GHz意味着时钟节拍或振荡为每秒12亿次。</p>
+<p>因此，考虑到每个时钟周期仅为1/1200000000秒，4个时钟周期也是非常快的。但是，与CPU寄存器相比，这个速度还是慢了，因为访问寄存器一般只需要1个时钟周期。</p>
+<p>幸运的是，CPU设计者很早之前就已经指出，因为绝大多数程序都需要访问变量，计算机内存成为了速度瓶颈。他们想出了一个聪明的方法来减少读写内存的时间——将大部分近期使用过的指令和数据存放在高速存储器cache中。</p>
+<p>其思想是，程序更可能希望反复访问相同的内存和指令，因此，cache保存这些值就能使它们能被快速访问到。此外，当CPU开始执行一个程序时，它会预先将后续（比如）一千条指令加载到cache中，这个行为是基于这样一种假设，即这些指令很快就会被用到。</p>
+<p>如果这种情况重复发生在一个代码块中，则cache中就会有相同的指令。当处理器能够在cache存储器中发现想要的数据，则称为cache命中（cache hit）。反之，如果cpu在cache中没有找到数据，则称为cache未命中（cache miss）。</p>
+<p>x86系列中的cache存储器有两类型：一级cache（或主cache）位于CPU上；二级cache（或次cache）速度lve慢，通过高速数据总线与CPU相连。这两种cache以最佳方式一起工作。</p>
+<p>还有一个原因使得cache存储器比传统RAM速度快，cache存储器是由一种被称为静态RAM（static RAM）的特殊存储器芯片构成的。这种芯片比较贵，但是不需要为了保持其内容进行不断地刷新。另一方面，传统存储器，即动态RAM（dynamic RAM），就需要持续刷新。它速度慢一些，但是价格更便宜。</p>
+<h3 id="加载并执行程序"><a href="#加载并执行程序" class="headerlink" title="加载并执行程序"></a>加载并执行程序</h3><p>在程序执行之前，需要用一种工具程序将其加载到内存，这种工具程序称为程序加载器（program loader）。加载后，操作系统必须将CPU向程序的入口，即程序开始执行的地址。以下步骤是对这一过程的详细分解。</p>
+<ol>
+<li>操作系统（OS）在当前磁盘目录下搜索程序的文件名。如果找不到，则在预定目录列表（称为路径（path））下搜索文件名。当OS无法检索到文件名时，它会发出一个错误信息。</li>
+<li>如果程序文件被找到，OS就访问磁盘目录中的程序文件基本信息，包括文件大小，及其在磁盘驱动器上的物理位置。</li>
+<li>OS确定内存中下一个可使用的位置，将程序文件加载到内存。为该程序分配内存块，并将程序大小和位置信息加入表中（有时称为描述符表（descriptor table））。另外，OS可能调整程序内指针的值，使得它们包括程序数据地址。</li>
+<li>OS开始执行程序的第一条机器指令（程序入口）。当程序开始执行后，就成为一个进程（progress）。OS为这个进程分配一个标识号（进程ID），用于在执行期间对其进行追踪。</li>
+<li>进程自动运行。OS的工作是追踪进程的执行，并响应系统资源的请求。这些资源包括内存、磁盘文件和输入输出设备等。</li>
+<li>进程结束后，就会从内存中移除。</li>
+</ol>
+<p>不论使用哪个版本的Microsoft Windows，按下Ctrl-Alt-Delete组合键，可以选择任务管理器（task manager）选项，在任务管理器窗口可以查看应用程序和进程列表。</p>
+<p>应用程序列表中列出了当前正在运行的完整程序名称，比如，Windows浏览器，或者Microsoft Visual C++。如果选择进程列表，则会看见一长串进程名。其中的每个进程都是一个独立于其他进程的，并处于运行中的小程序。</p>
+<p>可以连续追踪每个进程使用的CPU时间和内存容量。在某些情况下，选定一个进程名称后，按下Delete键就可以关闭该进程。</p>
+<h1 id="二、32位x86处理器架构"><a href="#二、32位x86处理器架构" class="headerlink" title="二、32位x86处理器架构"></a>二、32位x86处理器架构</h1><h3 id="操作模式"><a href="#操作模式" class="headerlink" title="操作模式"></a>操作模式</h3><p>x86处理器有三个主要的操作模式：保护模式、实地址模式和系统管理模式；以及一个子模式：虚拟8086（virtual-8086）模式，这是保护模式的特殊情况。以下是对这些模式的简介：</p>
+<ol>
+<li><h5 id="保护模式（Protected-Mode）"><a href="#保护模式（Protected-Mode）" class="headerlink" title="保护模式（Protected Mode）"></a>保护模式（Protected Mode）</h5><p>保护模式是处理器的原生状态，在这种模式下，所有的指令和特性都是可用的。分配给程序的独立区域被称为段，而处理器会阻止程序使用自身范围之外的内存。</p>
+</li>
+<li><p>虚拟8086模式（Virtual-8086 Mode）</p>
+<p>保护模式下，处理器可以在一个安全环境中，直接执行实地址模式软件，如MS-DOS程序。换句话说，如果一个程序崩溃了或是试图向系统内存区域写数据，都不会影响到同一时间内执行的其他程序。现代操作系统可以同时执行多个独立的虚拟8086会话。</p>
+</li>
+<li><p>实地址模式（Real-Address Mode）</p>
+<p>实地址模式实现的是早期Intel处理器的编程环境，但是增加了一些其他特性，如切换到其他模式的功能。当程序需要直接访问系统内存和硬件设备时，这种模式就很有用。</p>
+</li>
+<li><p>系统管理模式（System Management Mode）</p>
+<p>系统管理模式（SMM）向操作系统提供了实现诸如电源管理和系统安全等功能的机制。这些功能通常是由计算机制造商实现的，他们为了一个特定的系统设置而定制处理器。</p>
+</li>
+</ol>
+<h3 id="基本执行环境"><a href="#基本执行环境" class="headerlink" title="基本执行环境"></a>基本执行环境</h3><ol>
+<li><h5 id="地址空间"><a href="#地址空间" class="headerlink" title="地址空间"></a>地址空间</h5><p>在32位保护模式下，一个任务或程序最大可以寻址4GB的线性地址空间。从P6处理器开始，一种被称为物理寻址（extended physical addressing）的技术使得可以被寻址的物理内存空间增加到64GB。</p>
+<p>与之相反，实地址模式程序只能寻址1MB空间。如果处理器在保护模式下运行多个虚拟8086程序，则每个程序只能拥有自己的1MB内存空间。</p>
+</li>
+<li><h5 id="基本程序执行寄存器"><a href="#基本程序执行寄存器" class="headerlink" title="基本程序执行寄存器"></a>基本程序执行寄存器</h5><p>寄存器是直接位于CPU内到高速存储位置，其设计访问速度远高于传统存储器。例如，当一个循环处理为了速度进行优化时，其循环计数会保留在寄存器中而不是变量中。</p>
+<p>下图展示的是基本程序执行寄存器（basic program execution registers）。8个通用寄存器，6个段寄存器，一个处理状态标志寄存器（EFLAGS），和一个指令指针寄存器（EIP）。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G35644562.png" srcset="/img/loading.gif" lazyload alt="基本程序执行寄存器"></p>
+<h5 id="通用寄存器"><a href="#通用寄存器" class="headerlink" title="通用寄存器"></a>通用寄存器</h5><p>通用寄存器主要用于算术运算和数据传输。如下图所示，EAX寄存器的低16位在使用时可以用AX表示。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G35P0916.png" srcset="/img/loading.gif" lazyload alt="通用寄存器"></p>
+<p>一些寄存器的组成部分可以处理8位的值。例如，AX寄存器的高8位被称为AH，而低8位被称为AL。同样的重叠关系也存在于EAX、EBX、ECX和EDX寄存器中：</p>
+<table>
+<thead>
+<tr>
+<th>32 位</th>
+<th>16 位</th>
+<th>8 位（高）</th>
+<th>8 位（低）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>EAX</td>
+<td>AX</td>
+<td>AH</td>
+<td>AL</td>
+</tr>
+<tr>
+<td>EBX</td>
+<td>BX</td>
+<td>BH</td>
+<td>BL</td>
+</tr>
+<tr>
+<td>ECX</td>
+<td>CX</td>
+<td>CH</td>
+<td>CL</td>
+</tr>
+<tr>
+<td>EDX</td>
+<td>DX</td>
+<td>DH</td>
+<td>DL</td>
+</tr>
+</tbody></table>
+<p>其他通用寄存器只能用32位或16位名称来访问，如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>32 位</th>
+<th>16 位</th>
+<th>32 位</th>
+<th>16 位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ESI</td>
+<td>SI</td>
+<td>EBP</td>
+<td>BP</td>
+</tr>
+<tr>
+<td>EDI</td>
+<td>DI</td>
+<td>ESP</td>
+<td>SP</td>
+</tr>
+</tbody></table>
+<h5 id="特殊用法"><a href="#特殊用法" class="headerlink" title="特殊用法"></a>特殊用法</h5><p>某些通用寄存器有特殊用法：</p>
+<ul>
+<li>乘除指令默认使用EAX。它常常被称为扩展累加器（extended accumulator）寄存器。</li>
+<li>CPU默认使用ECX为循环计数器。</li>
+<li>ESP用于寻址堆栈（一种系统内存结构）数据。它极少用于一般算术运算和数据传输，通常被称为扩展堆栈指针（extended stack pointer）寄存器。</li>
+<li>ESI和EDI用于高速存储器传输指令，有时也被称为扩展源变址（extended source index）寄存器和扩展目的变址（extended destination index）寄存器。</li>
+<li>高级语言通过EBP来引用堆栈中的函数参数和局部变量。除了高级编程，它不用于一般算术运算和数据传输。它常常被称为扩展帧指针（extended frame pointer）寄存器。</li>
+</ul>
+<h5 id="段寄存器"><a href="#段寄存器" class="headerlink" title="段寄存器"></a>段寄存器</h5><p>实地址模式中，16位段寄存器表示的是预先分配的内存区域的基址，这个内存区域称为段。保护模式中，段寄存器中存放的是段描述符表指针。一些段中存放程序指令（代码），其他段存放变量（数据），还有一个堆栈段存放的是局部函数变量和函数参数。</p>
+<h5 id="指令指针"><a href="#指令指针" class="headerlink" title="指令指针"></a>指令指针</h5><p>指令指针（EIP）寄存器中包含下一条将要执行指令的地址。某些机器指令能控制EIP，使得程序分支转向到一个新位置。</p>
+<h5 id="EFLAGS寄存器"><a href="#EFLAGS寄存器" class="headerlink" title="EFLAGS寄存器"></a>EFLAGS寄存器</h5><p>EFLAGS（或Flags）寄存器包含了独立的二进制位，用于控制CPU的操作，或是反映一些CPU操作的结果。有些指令可以测试和控制这些单独的处理器标志位。</p>
+<p>设置标志位时，该标识位=1；清楚（或重置）标识位时，该标识位=0。</p>
+<h5 id="控制标识位"><a href="#控制标识位" class="headerlink" title="控制标识位"></a>控制标识位</h5><p>控制标志位控制CPU的操作。例如，它们能使得CPU每执行一条指令后进入中断；在侦测到算术运算溢出时中断执行；进入虚拟8086模式，以及进入保护模式。</p>
+<p>程序能够通过设置EFLAGS寄存器中的单独位来控制CPU的操作，比如，方向标志位和中断标志位。</p>
+<h5 id="状态标志位"><a href="#状态标志位" class="headerlink" title="状态标志位"></a>状态标志位</h5><p>状态标志位反映了CPU执行的算术和逻辑操作的结果。其中包括：溢出位、符号位、零标志位、辅助进位标志位、奇偶校验位和进位标志位。下述说明中，标志位的缩写紧跟在标志位名称之后：</p>
+<ul>
+<li>进位标志位（CF），与目标位置相比，无符号算术运算结果太大时，设置该标志位。</li>
+<li>溢出标志位（OF），与目标位置相比，有符号算术运算结果太大或太小时，设置该标志位。</li>
+<li>符号标志位（SF），算术或逻辑操作产生负结果时，设置该标志位。</li>
+<li>零标志位（ZF），算术或逻辑操作产生结果为零时，设置该标志位。</li>
+<li>辅助进位标志符（AC），算术操作在8位操作数中产生了位3向位4的进位时，设置该标志位。</li>
+<li>奇偶校验标志位（PF），结果的最低有效字节包含偶数个1 时，设置该标志位，否则，清除该标志位。一般情况下，如果数据有可能被修改或损坏时，该标志位用于进行错误检测。</li>
+</ul>
+</li>
+<li><h5 id="MMX寄存器"><a href="#MMX寄存器" class="headerlink" title="MMX寄存器"></a>MMX寄存器</h5><p>在实现高级多媒体和通信应用时，MMX技术提高了Intel处理器的性能。8个64位MMX寄存器支持称为SMD（单指令，多数据，Single- Instruction，Multiple-Data）的特殊指令。</p>
+<p>顾名思义，MMX指令对MMX寄存器中的数据值进行并行操作。虽然，它们看上去是独立的寄存器，但是MMX寄存器名实际上是浮点单元中使用的同样寄存器的别名。</p>
+</li>
+<li><h5 id="XMM寄存器"><a href="#XMM寄存器" class="headerlink" title="XMM寄存器"></a>XMM寄存器</h5><p>x86结构还包括8个128位XMM寄存器，它们被用于SIMD流扩展指令集。</p>
+<h5 id="浮点单元"><a href="#浮点单元" class="headerlink" title="浮点单元"></a>浮点单元</h5><p>浮点单元（FPU，floating-point unit）执行高速浮点运算。之前为了这个目的，需要一个独立的协处理器芯片。从Intel486处理器开始，FPU已经集成到主处理器芯片上。</p>
+<p>FPU中有8个浮点数据寄存器，分别命名为ST（0），ST（1），ST（2），ST（3），ST（4），ST（5），ST（6）和ST（7）。其他控制寄存器和指针寄存器如下图所示。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G4034NE.png" srcset="/img/loading.gif" lazyload alt="浮点单元寄存器"></p>
+</li>
+<li><h5 id="X86内存管理"><a href="#X86内存管理" class="headerlink" title="X86内存管理"></a>X86内存管理</h5><p>x86处理器按照前面讨论的基本操作模式来管理内存。保护模式是最可靠、最强大的，但是它对应用程序直接访问系统硬件有着严格的限制。</p>
+<p>在实地址模式中，只能寻址1MB内存，地址从00000H到FFFFFH。处理器一次只能运行一个程序，但是可以暂时中断程序来处理来自外围设备的请求（称为中断（interrupt））。</p>
+<p>应用程序被允许访问内存的任何位置，包括那些直接与系统设备相关的地址。MS-DOS操作系统在实地址模式下运行，Windows 95和98能够引导进入这种模式。</p>
+<p>在保护模式中，处理器可以同时运行多个程序，它为每个进程（运行中的程序）分配总共4GB的内存。每个程序都分配有自己的保留内存区域，程序之间禁止意外访问其他程序的代码和数据。MS-Windows和Linux运行在保护模式下。</p>
+<p>在虚拟8086模式中，计算机运行在保护模式下，通过创建一个带有1MB地址空间的虚拟8086机器来模拟运行于实地址模式的80x86计算机。例如，在Windows NT和2000下，当打开一个命令窗口时，就创建了一个虚拟8086机器。在同一时间可以运行多个这样的窗口，并且窗口之间都是受到保护的。</p>
+<p>在Window NT，2000和XP系统中，某些需要直接使用计算机硬件的MS-DOS程序不能运行在虚拟8086模式下。</p>
+</li>
+</ol>
+<h1 id="三、64位x86-64处理器架构"><a href="#三、64位x86-64处理器架构" class="headerlink" title="三、64位x86-64处理器架构"></a>三、64位x86-64处理器架构</h1><p>Intel64和AMD64处理器系列的基本特征：</p>
+<ol>
+<li>向后兼容x86指令集。</li>
+<li>地址长度为64位通用寄存器，允许指令具有64位整数操作数。</li>
+<li>可以使用64位通用寄存器，允许指令具有64位整数操作数。</li>
+<li>比x86多了8个通用寄存器。</li>
+<li>物理地址为48位，支持高达256TB的RAM。</li>
+</ol>
+<p>另一方面，当处理器运行于本机64位模式时，是不支持16位实模式或虚拟8086模式的。（在传统模式（legacy mode）下，还是支持16位编程，但是在Microsolft Windows64位版本中不可用。）</p>
+<p>注意尽管x86-64指的是指令集，但是也可以将其看作是处理器类型。</p>
+<h3 id="64位操作模式"><a href="#64位操作模式" class="headerlink" title="64位操作模式"></a>64位操作模式</h3><p>Intel64架构引入了一个新模式，称为IA-32e。从技术上看，这个模式包含两个子模式：兼容模式（compatibility mode）和64位模式（64-bit mode）。不过它们常常被看做是模式而不是子模式。</p>
+<ol>
+<li><p>兼容模式</p>
+<p>在兼容模式下，现有的16位与32位应用程序通常不用进行重新编译就可以运行。但是，16位Windows（Win16）和DOS应用程序不能运行在64位Microsoft Windows下。</p>
+<p>与早期Windows版本不同，64位Windows没有虚拟DOS机器子系统来利用处理器的功能切换到虚拟8086模式。</p>
+</li>
+<li><p>64位模式</p>
+<p>在64位模式下，处理器执行的是使用64位线性地址空间的应用程序。这是64位Microsoft Windows的原生模式，该模式能使用64位指令操作数。</p>
+</li>
+</ol>
+<h3 id="基本64位执行环境"><a href="#基本64位执行环境" class="headerlink" title="基本64位执行环境"></a>基本64位执行环境</h3><p>64位模式下，虽然处理器现在只能支持48位的地址，但是理论上，地址最大为64位。从寄存器来看，64位模式与32位最主要的区别如下所示：</p>
+<ul>
+<li>16个64位通用寄存器（32位模式只有8个通用寄存器）</li>
+<li>8个80位浮点寄存器</li>
+<li>1个64位状态标志寄存器RFLAGS（只使用低32位）</li>
+<li>1个64位指令指针寄存器RIP</li>
+</ul>
+<p>32位标志寄存器和指令指针寄存器分别称为EFLAGS和EIP。此外，还有一些x86处理器用于多媒体处理的特殊寄存器：</p>
+<ul>
+<li>8个64位MMX寄存器</li>
+<li>16个128位XMM寄存器（32位模式只有8个XMM寄存器）</li>
+</ul>
+<h5 id="通用寄存器-1"><a href="#通用寄存器-1" class="headerlink" title="通用寄存器"></a>通用寄存器</h5><p>64位模式下，操作数的默认大小是32位，并且有8个通用寄存器。但是，给每条指令加上REX（寄存器扩展）前缀后，操作数可以达到64位，可用通用寄存器的数量也增加到16个：32位模式下的寄存器，再加上8个有标号的寄存器，R8到R15。</p>
+<table>
+<thead>
+<tr>
+<th>操作数大小</th>
+<th>可用寄存器</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>8 位</td>
+<td>AL、BL、CL、DL、DIL、SIL、BPL、SPL、R8L、R9L、R10L、R11L、R12L、R13L、R14L、R15L</td>
+</tr>
+<tr>
+<td>16 位</td>
+<td>AX、BX、CX、DX、DI、SI、BP、SP、R8W、R9W、R10W、R11W、R12W、R13W、R14W、R15W</td>
+</tr>
+<tr>
+<td>32 位</td>
+<td>EAX、EBX、ECX、EDX、EDI、ESI、EBP、ESP、R8D、R9D、R10D、R11D、R12D、R13D、R14D、R15D</td>
+</tr>
+<tr>
+<td>64 位</td>
+<td>RAX、RBX、RCX、RDX、RDI、RSI、RBP、RSP、R8、R9、R10、R11、R12、R13、R14、R15</td>
+</tr>
+</tbody></table>
+<p>还需要记住的一些细节：</p>
+<ul>
+<li>64位模式下，单条指令不能同时访问寄存器高字节，如AH、BH、CH和DH，以及新字节寄存器的低字节（如DIL）。</li>
+<li>64位模式下，32位EFLAGS寄存器由64位RFLAGS寄存器取代。这两个寄存器共享低32位，而RFLAGS的高32位是不使用的。</li>
+<li>32位模式和64位模式具有相同的状态标志。</li>
+</ul>
+<h1 id="四、x86计算机组件"><a href="#四、x86计算机组件" class="headerlink" title="四、x86计算机组件"></a>四、x86计算机组件</h1><h3 id="主板"><a href="#主板" class="headerlink" title="主板"></a>主板</h3><p>主板是微型计算机的心脏，它是一个平面电路板，其上集成lCPU、支持处理器（芯片组（chipset））、主存、输入输出接口、电源接口和扩展插槽。</p>
+<p>各种组件通过总线即一组直接蚀刻在主板上的导线，进行互连。目前PC市场上有几十种主板，它们在扩展功能、集成部件和速度方面存在着差异。但是，下述组件一般都会出现在主板上：</p>
+<ul>
+<li>CPU插座。根据其支持的处理器类型，插座具有不同的形状和尺寸。</li>
+<li>存储器插槽（SIMM或DIMM），用于直接插入小型内存条。</li>
+<li>BIOS（基本输入输出系统，basic input- output system）计算机芯片，保存系统软件。</li>
+<li>CMOS RAM，用一个小型纽扣电池为其持续供电。</li>
+<li>大容量插槽设备接口，如硬盘和CD-ROMS。</li>
+<li>外部设备的USB接口。</li>
+<li>键盘和鼠标接口。</li>
+<li>PCI总线接口，用于声卡、显卡、数据采集卡和其他输入输出设备。</li>
+</ul>
+<p>以下是可选组件：</p>
+<ul>
+<li>集成声音处理器。</li>
+<li>并行和串行设备接口。</li>
+<li>集成网卡。</li>
+<li>用于高速显卡的AGP总线接口。</li>
+</ul>
+<p>典型系统中还有一些重要的支持处理器：</p>
+<ul>
+<li>浮点单元（FPU），处理浮点数和扩展整数运算。</li>
+<li>8284/82C84时钟发生器，简称时钟，按照恒定速率振荡。时钟发生器同步CPU和计算机的其他部分。</li>
+<li>8259A可编程中断控制器（PIC，Programmable Interrupt Controller），处理来自硬件设备的外部中断请求，包括键盘、系统时钟和磁盘驱动器，这些设备能中断CPU，并使其立即响应它们的请求。</li>
+<li>8253可编程间隔定时器/计数器（Programmable Interval Timer/Counter），每秒中断系统18.2次，更新系统日期和时钟，并控制扬声器。它还负责不断刷新内存，因为RAM存储芯片保持其内容的时间只有几毫秒。</li>
+<li>8255可编程并行端口（Programmable Parallel Port），使用IEEE并行端口将数据输入和输出计算机。该端口通常用于打印机，但是也可以用于其他输入输出设备。</li>
+</ul>
+<ol>
+<li><h5 id="PCI和PCI-Express总线架构"><a href="#PCI和PCI-Express总线架构" class="headerlink" title="PCI和PCI Express总线架构"></a>PCI和PCI Express总线架构</h5><p>PCI（外部设备互联，Peripheral Component Interconnect）总线为CPU和其他系统设备提供了连接桥，这些设备包括硬盘驱动器、内存、显卡、声卡和网卡。</p>
+<p>最近，PCI Express总线在设备、内存和处理器之间提供了双向串行连接。如同网络一样，它用独立的“通信”传送数据包。该总线得到显卡的广泛支持，能以较高速度传输数据。</p>
+</li>
+<li><h5 id="主板芯片组"><a href="#主板芯片组" class="headerlink" title="主板芯片组"></a>主板芯片组</h5><p>主板芯片组（motherlboard chipset）是一组处理器芯片的集合，这些芯片被设计为在特定类型主板上一起工作。</p>
+<p>各种芯片 具有增强处理能力、多媒体功能或减少功耗等特性。以Intel P965 Express芯片组为例，该芯片组与Intel Core2 Duo或Pentium D处理器一起，用于桌面系统。</p>
+<p>Intel P965具有下述特性：</p>
+<ul>
+<li>Intel高速内存访问（Fast Memory Access）使用了最新内存控制中心（MCH）。它可以800MHz时钟速度来访问双通道DDR2存储器。</li>
+<li>I/O控制中心（Intel ICH8/R/DH）使用Intel矩阵存储技术（MST）来支持 多个串行ATA设备（磁盘驱动器）。</li>
+<li>支持多个USB端口，多个PCI Express插槽，联网和Intel静音系统技术。</li>
+<li>高清晰音频芯片提供了数字声音功能。</li>
+</ul>
+<p>如下图所示，主板厂商以特定芯片为中心来制造产品。例如，Asus公司使用P965芯片组的P5B-E P965主板。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42G61434K0.png" srcset="/img/loading.gif" lazyload alt="Intel P965 Express芯片组框图"></p>
+</li>
+</ol>
+<h5 id="内存"><a href="#内存" class="headerlink" title="内存"></a>内存</h5><p>基于Intel的系统使用的是几种基础类型内存：只读存储器（ROM）、可擦除可编程只读存储器（EPROM）、动态随机访问存储器（DRAM）、静态RAM（SRAM）、图像随机存储器（VRAM），和互补金属氧化物半导体（CMOS）RAM：</p>
+<ul>
+<li>ROM永久烧录在芯片上，并且不能擦除。</li>
+<li>EPROM能用紫外线缓慢擦除，并且重新编程。</li>
+<li>DRAM，即通常的内存，在程序运行时保存程序和数据的部件。该部件价格便宜，但是每毫秒需要进行刷新，以避免丢失其内容。有些系统使用的是ECC（错误检查和纠正）存储器。</li>
+<li>SRAM主要用于价格高、速度快的cache存储器。它不需要刷新，CPU的cache存储器就是由SRAM构成的。</li>
+<li>VRAM保存视频数据。VRAM是双端口的，它允许一个端口持续刷新显示器，同时另一个端口将数据写到显示器。</li>
+<li>CMOS RAM在系统主板上，保存系统设置信息。它由电池供电，因此当计算机电源关闭后，CMOS RAM中的内容仍然能有保留。</li>
+</ul>
+<h1 id="五、计算机I-O输入输出系统"><a href="#五、计算机I-O输入输出系统" class="headerlink" title="五、计算机I/O输入输出系统"></a>五、计算机I/O输入输出系统</h1><h3 id="I-O访问层次"><a href="#I-O访问层次" class="headerlink" title="I/O访问层次"></a>I/O访问层次</h3><p>应用程序通常从键盘和磁盘文件读取输入，而将输出写到显示器和文件中。完成I/O不需要直接访问硬件——相反，可以调用操作系统的函数。</p>
+<p>I/O有不同的访问层次，主要有以下三个：</p>
+<ol>
+<li><h5 id="高级语言系统"><a href="#高级语言系统" class="headerlink" title="高级语言系统"></a>高级语言系统</h5><p> 高级编程语言，如C++或Java，包含了执行输入输出的函数。由于这些函数要在各种不同的计算机系统中工作，并不依赖于任何一个操作系统，因此，这些函数具有可移植性。</p>
+</li>
+<li><h5 id="操作系统"><a href="#操作系统" class="headerlink" title="操作系统"></a>操作系统</h5><p> 程序员能够从被称为API（应用程序编程接口，Application Programming Interface）的库中调用操作系统函数。操作系统提供高级操作，比如，向文件写入字符串，从键盘读取字符，和分配内存块。</p>
+</li>
+<li><h5 id="BIOS"><a href="#BIOS" class="headerlink" title="BIOS"></a>BIOS</h5><p> 基本输入输出系统是一组能够直接与硬件设备通信的低级子程序集合。BIOS由计算机制造商安装并定制，以适应机器硬件。操作系统通常与BIOS通信。</p>
+</li>
+</ol>
+<h3 id="设备驱动程序"><a href="#设备驱动程序" class="headerlink" title="设备驱动程序"></a>设备驱动程序</h3><p>设备驱动程序允许操作系统与硬件设备和系统BIOS直接通信。例如，设备驱动程序可能接收来自OS的请求来读取一些数据，而满足该请求的方法是，通过执行设备固件中的代码，用设备特有的方式来读取数据。</p>
+<p>设备驱动程序有两种安装方法：一种是在特定硬件设备连接到系统之前，或者设备已连接并且识别之后。对于后一种方法，OS识别设备名称和签名，然后在计算机上定位并安装设备驱动软件。</p>
+<p>现在，通过展示应用程序在屏幕上显示字符串的过程，来了解I/O层次结构如下图所示。</p>
+<p><img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42P94340641.png" srcset="/img/loading.gif" lazyload alt="输入输出操作的访问层次"></p>
+<p>该过程包含一下步骤：</p>
+<ul>
+<li>  应用程序调用HLL库函数，将字符串写入标准输出。</li>
+<li>  库函数（第3层）调用操作系统函数，传递一个字符串指针。</li>
+<li>  操作系统函数（第2层）用循环的方法调用BIOS子程序，向其传递每个字符的ASCII码和颜色。操作系统调用另一个BIOS子程序，将光标移动到屏幕的下一个位置上。</li>
+<li>  BIOS子程序（第1层）接收一个字符，将其映射到一个特定的系统字体，并把该字符发送到与视频控制卡相连的硬件端口。</li>
+<li>  视频控制卡（第0层）为视频显示产生定时映射信号，来控制光栅扫描并显示像素。</li>
+</ul>
+<h3 id="多层次编程"><a href="#多层次编程" class="headerlink" title="多层次编程"></a>多层次编程</h3><p>汇编语言程序在输入输出编程领域有着强大的能力和灵活性。它们可以从以下访问层次进行选择（如下图所示）：</p>
+<ul>
+<li><p>  第3层：调用库函数来执行通用文本I/O和基于文件的I/O。</p>
+</li>
+<li><p>  第2层：调用操作系统函数来执行通用文本I/O和基于文件的I/O。如果OS使用了图形用户界面，它就能用与设备无关的方式来显示图形。</p>
+</li>
+<li><p>  第1层：调用BIOS函数来控制设备具体特性，如颜色、图形、声音、键盘输入和底层磁盘I/O。</p>
+</li>
+<li><p>第0层：从硬件端口发送和接收数据，对特定设备拥有绝对控制权。这个方式没有广泛用于各种硬件设备，因此不具可移植性。不同设备通常使用不同硬件端口，因此，程序代码必须根据每个设备的特定类型来进行定制。</p>
+<p>  <img src="./x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/4-1Z42P9491MV.png" srcset="/img/loading.gif" lazyload alt="汇编语言访问层次"></p>
+</li>
+</ul>
+<p>如何进行权衡？控制与可移植性是最重要的。第2层（OS)工作在任何一个运行同样操作系统的计算机上。如果I/O设备缺少某些功能，那么OS将尽可能接近预期结果。第2层速度并不特别快，因为每个I/O调用在执行前，都必须经过好几个层次。</p>
+<p>第1层（BIOS）在具有标准BIOS的所有系统上工作，但是在这些系统上不会产生同样的结果。例如，两台计算机可能会有不同分辨率的视频显示功能。在第1层上的程序员需要编写代码来检测用户的硬件设置，并调整输出格式来与之匹配。第0层的程序执行速度与硬件一样快。</p>
+<p>举个例子，假设要用音频控制设备来播放一个WAV文件。在OS层上，不需要了解已安装设备的类型，也不用关心设备卡的非标准特性。</p>
+<p>在BIOS上，要查询声卡（通过其已安装的设备驱动软件），找出它是否属于某一类具有已知功能的声卡。在硬件层上，需要对特定模式声卡的程序进行微调，以利用每个声卡的特性。</p>
+<p>通用操作系统极少允许应用程序直接访问系统硬件，因为这样做会使得它几乎无法同时运行多个程序。相反，硬件只能由设备驱动程序按照严格控制的方式进行访问。</p>
+<p>另一方面，专业设备额度小型操作系统则常常直接与硬件相连。这样做是为了减少操作系统占用的内存空间，并且这些操作系统几乎总是一次只运行单个程序。Microsoft最后一个允许程序直接访问硬件的操作系统是MS-DOS，它一次只能运行一个程序。</p>
+<p>求学之路：<a target="_blank" rel="noopener" href="http://c.biancheng.net/asm/20/">http://c.biancheng.net/asm/20/</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>x86处理器架构</div>
+      <div>http://example.com/2022/01/04/x86处理器架构/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>January 4, 2022</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/01/13/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E6%8C%87%E4%BB%A4/" title="汇编语言基础指令">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">汇编语言基础指令</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" title="PHP代码审计之命令执行漏洞">
+                        <span class="hidden-mobile">PHP代码审计之命令执行漏洞</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

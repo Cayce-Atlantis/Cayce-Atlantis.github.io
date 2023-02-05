@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="SQL Injection基础 概述  SQL注入（SQL injection），是发生于应用程序与数据库层的安全漏洞。只要是支持处理SQL指令的数据库服务器，都有可能受到此种手法的攻击。  原因  未经检查或者未经充分检查的用户输入数据，意外变成了代码被执行。针对于SQL注入，则是用户提交的数据，被数据库系统编译而产生了开发者预期之外的动作。也就是，SQL注入是用户输入的数据，在拼接SQL语句的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java源代码审计-SQL注入">
+<meta property="og:url" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="SQL Injection基础 概述  SQL注入（SQL injection），是发生于应用程序与数据库层的安全漏洞。只要是支持处理SQL指令的数据库服务器，都有可能受到此种手法的攻击。  原因  未经检查或者未经充分检查的用户输入数据，意外变成了代码被执行。针对于SQL注入，则是用户提交的数据，被数据库系统编译而产生了开发者预期之外的动作。也就是，SQL注入是用户输入的数据，在拼接SQL语句的">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL1.png">
+<meta property="og:image" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL2.png">
+<meta property="og:image" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL3.png">
+<meta property="og:image" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL4.png">
+<meta property="og:image" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL5.png">
+<meta property="article:published_time" content="2023-02-02T01:32:35.000Z">
+<meta property="article:modified_time" content="2023-02-05T06:45:40.094Z">
+<meta property="article:author" content="Cayce">
+<meta property="article:tag" content="SQL Injection">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL1.png">
+  
+  
+  
+  <title>java源代码审计-SQL注入 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="java源代码审计-SQL注入"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-02-02 09:32" pubdate>
+          February 2, 2023 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          52 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">java源代码审计-SQL注入</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="SQL-Injection基础"><a href="#SQL-Injection基础" class="headerlink" title="SQL Injection基础"></a>SQL Injection基础</h3><ol>
+<li><p>概述</p>
+<p> SQL注入（SQL injection），是发生于应用程序与数据库层的安全漏洞。只要是支持处理SQL指令的数据库服务器，都有可能受到此种手法的攻击。</p>
+</li>
+<li><p>原因</p>
+<p> 未经检查或者未经充分检查的用户输入数据，意外变成了代码被执行。针对于SQL注入，则是用户提交的数据，被数据库系统编译而产生了开发者预期之外的动作。也就是，SQL注入是用户输入的数据，在拼接SQL语句的过程中，超越了数据本身，成为了SQL语句查询逻辑的一部分，然后这样被拼接出来的SQL语句被数据库执行，产生了开发者预期之外的动作。</p>
+<p> 是网站存在最多也是最简单的漏洞。主要原因是程序对用户输入数据的合法性没有判断和处理，导致攻击者可以在 Web 应用程序中事先定义好的 SQL 语句中添加额外的 SQL 语句，在管理员不知情的情况下实现非法操作，以此来实现欺骗数据库服务器执行非授权的任意查询，从而进一步获取到数据信息。</p>
+</li>
+<li><p>危害</p>
+<ul>
+<li>  数据库中存储的用户隐私信息泄漏；</li>
+<li>  通过操作数据库对某些网页进行篡改；</li>
+<li>  修改数据库一些字段的值，嵌入网马链接，进行挂马攻击；</li>
+<li>  数据库服务器被恶意操作，系统管理员帐户被窜改；</li>
+<li>  数据库服务器提供的操作系统支持，让黑客得以修改或控制操作系统；</li>
+<li>  破坏硬盘数据，导致全系统瘫痪。</li>
+</ul>
+</li>
+</ol>
+<h3 id="漏洞代码"><a href="#漏洞代码" class="headerlink" title="漏洞代码"></a>漏洞代码</h3><ol>
+<li><p><strong>直接用servlet写SQL语句</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs java">  <span class="hljs-comment">/**</span><br><span class="hljs-comment">   * Vuln Code.</span><br><span class="hljs-comment">   * http://localhost:8080/sqli/jdbc/vuln?username=joychou</span><br><span class="hljs-comment">   *</span><br><span class="hljs-comment">   * <span class="hljs-doctag">@param</span> username username</span><br><span class="hljs-comment">   */</span><br><span class="hljs-comment">//RequestMapping 这个controller表示匹配的URL</span><br>  <span class="hljs-meta">@RequestMapping(&quot;/jdbc/vuln&quot;)</span><br><span class="hljs-comment">//@RequestParam(&quot;username&quot;)获取从前端传过来的username参数</span><br>  <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">jdbc_sqli_vul</span><span class="hljs-params">(<span class="hljs-meta">@RequestParam(&quot;username&quot;)</span> String username)</span> </span>&#123;<br>    <br>      StringBuilder result = <span class="hljs-keyword">new</span> StringBuilder();<br>    <br>      <span class="hljs-keyword">try</span> &#123;<br>         <span class="hljs-comment">//获取数据库连接</span><br>          Class.forName(driver);<br>          Connection con = DriverManager.getConnection(url, user, password);<br>    <br>          <span class="hljs-keyword">if</span> (!con.isClosed())<br>              System.out.println(<span class="hljs-string">&quot;Connect to database successfully.&quot;</span>);<br>				<br>         <span class="hljs-comment">// sqli vuln code  这里没有使用预处理的方式，直接将获取的参数和SQL语句拼接，导致注入。</span><br>          Statement statement = con.createStatement();<br>          String sql = <span class="hljs-string">&quot;select * from users where username = &#x27;&quot;</span> + username + <span class="hljs-string">&quot;&#x27;&quot;</span>;<br>         <span class="hljs-comment">//终端打印sql</span><br>          logger.info(sql);<br>         <span class="hljs-comment">//执行拼接好的SQL语句</span><br>          ResultSet rs = statement.executeQuery(sql);<br>    <br>          <span class="hljs-keyword">while</span> (rs.next()) &#123;<br>              String res_name = rs.getString(<span class="hljs-string">&quot;username&quot;</span>);<br>              String res_pwd = rs.getString(<span class="hljs-string">&quot;password&quot;</span>);<br>              String info = String.format(<span class="hljs-string">&quot;%s: %s\n&quot;</span>, res_name, res_pwd);<br>              result.append(info);<br>              logger.info(info);<br>          &#125;<br>          rs.close();<br>          con.close();<br>    <br>    <br>      &#125; <span class="hljs-keyword">catch</span> (ClassNotFoundException e) &#123;<br>          logger.error(<span class="hljs-string">&quot;Sorry,can`t find the Driver!&quot;</span>);<br>      &#125; <span class="hljs-keyword">catch</span> (SQLException e) &#123;<br>          logger.error(e.toString());<br>      &#125;<br>      <span class="hljs-keyword">return</span> result.toString();<br>  &#125;<br></code></pre></td></tr></table></figure>
+
+ <img src="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL1.png" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-SQL注入">
+
+<p> <strong>安全代码</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**</span><br><span class="hljs-comment">     * security code</span><br><span class="hljs-comment">     * http://localhost:8080/sqli/mybatis/sec01?username=joychou</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> username username</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@GetMapping(&quot;/mybatis/sec01&quot;)</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> User <span class="hljs-title">mybatisSec01</span><span class="hljs-params">(<span class="hljs-meta">@RequestParam(&quot;username&quot;)</span> String username)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> userMapper.findByUserName(username);<br>    &#125;<br><br><span class="hljs-comment">//userMapper.jva</span><br>    <span class="hljs-meta">@Select(&quot;select * from users where username = #&#123;username&#125;&quot;)</span><br>    <span class="hljs-function">User <span class="hljs-title">findByUserName</span><span class="hljs-params">(<span class="hljs-meta">@Param(&quot;username&quot;)</span> String username)</span></span>;<br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * http://localhost:8080/sqli/mybatis/sec02?id=1</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> id id</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@GetMapping(&quot;/mybatis/sec02&quot;)</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> User <span class="hljs-title">mybatisSec02</span><span class="hljs-params">(<span class="hljs-meta">@RequestParam(&quot;id&quot;)</span> Integer id)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> userMapper.findById(id);<br>    &#125;<br><br><span class="hljs-comment">//userMapper.xml</span><br>    &lt;select id=<span class="hljs-string">&quot;findById&quot;</span> resultMap=<span class="hljs-string">&quot;User&quot;</span>&gt;<br>        select * from users where id = #&#123;id&#125;<br>    &lt;/select&gt;<br>      <br><br>    <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * http://localhost:8080/sqli/mybatis/sec03</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@GetMapping(&quot;/mybatis/sec03&quot;)</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> User <span class="hljs-title">mybatisSec03</span><span class="hljs-params">()</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> userMapper.OrderByUsername();<br>    &#125;<br><br><span class="hljs-comment">//userMapper.xml</span><br>    &lt;select id=<span class="hljs-string">&quot;OrderByUsername&quot;</span> resultMap=<span class="hljs-string">&quot;User&quot;</span>&gt;<br>        select * from users order by id asc limit <span class="hljs-number">1</span><br>    &lt;/select&gt;<br>      <br>      <br>    <span class="hljs-meta">@GetMapping(&quot;/mybatis/orderby/sec04&quot;)</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> List&lt;User&gt; <span class="hljs-title">mybatisOrderBySec04</span><span class="hljs-params">(<span class="hljs-meta">@RequestParam(&quot;sort&quot;)</span> String sort)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> userMapper.findByUserNameVuln03(SecurityUtil.sqlFilter(sort));<br>    &#125;<br><br>&#125;<br><br><span class="hljs-comment">//userMapper.xml     </span><br><span class="hljs-comment">//过滤mybatis中order by不能用#的情况。 严格限制用户输入只能包含&lt;code&gt;a-zA-Z0-9_-.&lt;/code&gt;字符。下面有介绍另一种</span><br>    &lt;select id=<span class="hljs-string">&quot;findByUserNameVuln03&quot;</span> parameterType=<span class="hljs-string">&quot;String&quot;</span> resultMap=<span class="hljs-string">&quot;User&quot;</span>&gt;<br>        select * from users<br>        &lt;<span class="hljs-keyword">if</span> test=<span class="hljs-string">&quot;order != null&quot;</span>&gt;<br>            order by $&#123;order&#125; asc<br>        &lt;/if&gt;<br>    &lt;/select&gt;<br><br><span class="hljs-comment">//SecurityUtil.sqlFilter(sort)</span><br>   <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">sqlFilter</span><span class="hljs-params">(String sql)</span> </span>&#123;<br>        <span class="hljs-keyword">if</span> (!FILTER_PATTERN.matcher(sql).matches()) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> sql;<br>    &#125;  <br></code></pre></td></tr></table></figure>
+
+<p> <strong>知识补充</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Select</span>注解的目的是为了取代xml中的select标签，只作用于方法上面。<br>源码：<br>	<span class="hljs-meta">@Retention(RetentionPolicy.RUNTIME)</span><br>	<span class="hljs-meta">@Target(ElementType.METHOD)</span><br>	<span class="hljs-keyword">public</span> <span class="hljs-meta">@interface</span> Select<br>	&#123;<br>    	String[] value();<br>	&#125;<br><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">源码说明了</span><br><span class="hljs-comment">（1）<span class="hljs-doctag">@Select</span>注解只能修饰方法</span><br><span class="hljs-comment">（2）<span class="hljs-doctag">@Select</span>注解的值是字符数组。</span><br><span class="hljs-comment"><span class="hljs-doctag">@Select</span>注解的值是字符数组，但是真正生效的应该是最后那条SQL语句。</span><br><span class="hljs-comment">*/</span><br><br><span class="hljs-comment">//普通的字符串值，只能实现变量的替换功能</span><br><span class="hljs-meta">@Select(&quot;select * from t_person where id = #&#123;id&#125;&quot;)</span><br><span class="hljs-function">Person <span class="hljs-title">selectPersonById</span><span class="hljs-params">(Integer id)</span></span>;<br><br><span class="hljs-meta">@Insert</span>，<span class="hljs-meta">@Update</span>... 同理<br>  <br>    <br>&lt;select id=<span class="hljs-string">&quot;findByUserNameVuln02&quot;</span> parameterType=<span class="hljs-string">&quot;String&quot;</span> resultMap=<span class="hljs-string">&quot;User&quot;</span>&gt;<br>		select * from users where username like <span class="hljs-string">&#x27;%$&#123;_parameter&#125;%&#x27;</span><br>&lt;/select&gt;  <br><span class="hljs-comment">//$&#123;_parameter&#125; ：当只有一个参数，可以使用_parameter，它就代表了这个参数</span><br>  <br>  <br><span class="hljs-comment">//!FILTER_PATTERN.matcher(sql).matches()   </span><br><span class="hljs-comment">//方法java.time.Matcher.matches()将给定区域与指定模式进行匹配。如果区域序列与Matcher的模式匹配，则返回true，否则返回false。</span><br></code></pre></td></tr></table></figure></li>
+<li><p><strong>Mybatis框架下易产生SQL注入漏洞场景分析</strong></p>
+<p> 在基于Mybatis框架的Java白盒代码审计工作中，通常将着手点定位在Mybatis的配置文件中。通过查看这些与数据库交互的配置文件来确定SQL语句中是否存在拼接情况，进而确立跟踪点。通过总结，Mybatis框架下易产生SQL注入漏洞的情况主要分为以下三种：</p>
+<p> <strong>模糊查询like</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">Select * from news where title like ‘%#&#123;title&#125;%’，<br><span class="hljs-comment">//由于这样写程序会报错，研发人员将SQL查询语句修改如下：</span><br>Select * from news where title like ‘%$&#123;title&#125;%’，<br><span class="hljs-comment">//在这种情况下我们发现程序不再报错，但是此时产生了SQL语句拼接问题，如果java代码层面没有对用户输入的内容做处理势必会产生SQL注入漏洞。</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>in之后的参数</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">Select * <span class="hljs-function">from news where id <span class="hljs-title">in</span> <span class="hljs-params">(#&#123;id&#125;)</span>，</span><br><span class="hljs-function"><span class="hljs-comment">//由于这样写程序会报错，研发人员将SQL查询语句修改如下：</span></span><br><span class="hljs-function">Select * from news where id <span class="hljs-title">in</span> <span class="hljs-params">($&#123;id&#125;)</span>，</span><br><span class="hljs-function"><span class="hljs-comment">//修改SQL语句之后，程序停止报错，但是却引入了SQL语句拼接的问题，如果研发人员没有对用户输入的内容做过滤，势必会产生SQL注入漏洞。</span></span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>order by之后</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">Select * from news where title =‘京东’ order by #&#123;time&#125; asc，<br><span class="hljs-comment">//由于发布时间time不是用户输入的参数，无法使用预编译。研发人员将SQL查询语句修改如下：</span><br>Select * from news where title =‘京东’ order by $&#123;time&#125; asc，<br><span class="hljs-comment">//修改之后，程序通过预编译，但是产生了SQL语句拼接问题，极有可能引发SQL注入漏洞。</span><br></code></pre></td></tr></table></figure></li>
+<li><p><strong>Mybatis框架下SQL注入漏洞修复建议</strong></p>
+<p> <strong>模糊查询like</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">select * <span class="hljs-function">from news where tile like <span class="hljs-title">concat</span><span class="hljs-params">(‘%’,#&#123;title&#125;, ‘%’)</span>，</span><br><span class="hljs-function"><span class="hljs-comment">//用concat，采用预编译机制，避免了SQL语句拼接的问题，从根源上防止了SQL注入漏洞的产生。</span></span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>in之后的参数</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java">select * from news where id in<br>&lt;foreach collection=&quot;ids&quot; item=&quot;item&quot; open=&quot;(&quot;separator=&quot;,&quot; close=&quot;)&quot;&gt;#&#123;item&#125; &lt;/foreach&gt;<br><br> <br><span class="hljs-comment">/**</span><br><span class="hljs-comment">一个个参数预编译拼接SQL语句查询</span><br><span class="hljs-comment">&lt;foreach&gt;&lt;/foreach&gt;标签 当传入参数为数组或者集合时进行遍历</span><br><span class="hljs-comment"> collection:指定输入对象中集合属性</span><br><span class="hljs-comment"> item:每次遍历生成的对象</span><br><span class="hljs-comment"> open:开始遍历时拼接的串</span><br><span class="hljs-comment"> separator:每次迭代的分隔符</span><br><span class="hljs-comment"> close:结束遍历时两个对象需要拼接的串</span><br><span class="hljs-comment"> */</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>order by之后</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">/**前面用正则匹配的方式</span><br><span class="hljs-comment">	 针对order by这种情况研发人员还可以在java层面做映射来进行解决。如当存在发布时间time和点击量click两种排序选择时，我们可以限制用户只能输入1和2。参数化接受请求。</span><br><span class="hljs-comment">*/</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="实战中的SQL注入漏洞挖掘"><a href="#实战中的SQL注入漏洞挖掘" class="headerlink" title="实战中的SQL注入漏洞挖掘"></a>实战中的SQL注入漏洞挖掘</h2><p>1、自动化工具扫描，一般使用fortify，根据扫出来的结果去做一个跟踪。</p>
+<p>2、使用全局搜索的功能搜索<strong>Statement</strong> 、**${** 根据查找的结果进行回溯。</p>
+<p>如：**${**</p>
+<img src="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL2.png" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-SQL注入">
+
+<p>IDEA 的Free Mabatis Tool插件可以在UserMapper.xml中直接让你找到对应方法的引用文件</p>
+<img src="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL3.png" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-SQL注入">
+
+<p>Mac下 <strong>cmd+鼠标左键</strong></p>
+<p>windows下 <strong>ctrl+鼠标左键</strong></p>
+<img src="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL4.png" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-SQL注入">
+
+<p>回溯到对应的controller</p>
+<img src="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/SQL5.png" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-SQL注入">
+
+<p>可以看到整个过程没有任何的过滤，直接获取参数传入，同时没有采用预编译的方式写SQL拼接，所以产生了注入。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/SQL-Injection/">#SQL Injection</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>java源代码审计-SQL注入</div>
+      <div>http://example.com/2023/02/02/java源代码审计-SQL注入/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>February 2, 2023</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/" title="java源代码审计-服务端请求伪造">
+                        <span class="hidden-mobile">java源代码审计-服务端请求伪造</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

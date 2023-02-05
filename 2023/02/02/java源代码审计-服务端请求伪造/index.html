@@ -1,0 +1,676 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="SSRF基础 概述  1）背景：互联网上的很多Web应用提供了从其他服务器（也可以是本地）获取数据的功能，使用用户指定的URL，Web应用可以获取图片、文件资源（下载或读取）。  2）定义：SSRF （Server-Side Request Forgery），服务器端请求伪造，是一种由攻击者构造请求，由服务端发起请求的安全漏洞。 请求伪造，顾名思义就是攻击者伪造正常的请求，以达到攻击的目的，就是常">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java源代码审计-服务端请求伪造">
+<meta property="og:url" content="http://example.com/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AF%B7%E6%B1%82%E4%BC%AA%E9%80%A0/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="SSRF基础 概述  1）背景：互联网上的很多Web应用提供了从其他服务器（也可以是本地）获取数据的功能，使用用户指定的URL，Web应用可以获取图片、文件资源（下载或读取）。  2）定义：SSRF （Server-Side Request Forgery），服务器端请求伪造，是一种由攻击者构造请求，由服务端发起请求的安全漏洞。 请求伪造，顾名思义就是攻击者伪造正常的请求，以达到攻击的目的，就是常">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-02-02T00:37:34.000Z">
+<meta property="article:modified_time" content="2023-02-02T01:31:50.761Z">
+<meta property="article:author" content="Cayce">
+<meta property="article:tag" content="SSRF">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>java源代码审计-服务端请求伪造 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="java源代码审计-服务端请求伪造"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-02-02 08:37" pubdate>
+          February 2, 2023 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.6k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          56 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">java源代码审计-服务端请求伪造</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="SSRF基础"><a href="#SSRF基础" class="headerlink" title="SSRF基础"></a>SSRF基础</h3><ol>
+<li><p>概述</p>
+<p> 1）<strong>背景</strong>：互联网上的很多Web应用提供了从其他服务器（也可以是本地）获取数据的功能，使用用户指定的URL，Web应用可以获取图片、文件资源（下载或读取）。</p>
+<p> 2）<strong>定义</strong>：SSRF （Server-Side Request Forgery），服务器端请求伪造，是一种由攻击者构造请求，由服务端发起请求的安全漏洞。 请求伪造，顾名思义就是攻击者伪造正常的请求，以达到攻击的目的，就是常见的Web安全漏洞之一。如果“请求伪造”发生在服务器端，那么这个漏洞就叫做“服务器端请求伪造”即SSRF。</p>
+<p> 3）<strong>示例</strong>：百度识图</p>
+<p> 用户可以从本地或URL的方式获取图片资源，交给百度识图处理。如果提交的是URL地址，该应用就会通过URL寻找图片资源。如果Web应用开放了类似于百度识图这样的功能，并且对用户提供的URL和远端服务器返回的信息没有进行合适的验证或者过滤，就可能存在“请求伪造”的缺陷。</p>
+</li>
+<li><p>原理</p>
+<p> 1）<strong>SSRF漏洞成因</strong></p>
+<p> （1）服务端提供了从其他服务器应用获取数据的功能；<br> （2）服务端对目标地址做过滤与限制 。</p>
+<p> 2）<strong>攻击目标</strong>：一般情况下 ， SSRF攻击的目标是外网无法访问的内部系统（正因为请求是由服务端发起的，所以服务端能请求到与自身相连而与外网隔离的内部系统）。</p>
+</li>
+<li><p>危害</p>
+<ul>
+<li>  对外网、服务器所在内网、本地进行端口扫描，获取一些服务的banner信息。</li>
+<li>  攻击运行在内网或本地的应用程序。</li>
+<li>  对内网 Web应用进行指纹识别，识别企业内部的资产信息 。</li>
+<li>  攻击内外网的Web应用，主要是使用 HTTP GET请求就可以实现的攻击（比如struts2 、 SQli等） 。</li>
+<li>  利用自file协议读取本地文件等 。</li>
+</ul>
+</li>
+</ol>
+<h3 id="漏洞代码"><a href="#漏洞代码" class="headerlink" title="漏洞代码"></a>漏洞代码</h3><p><strong>HttpURLConnection与URLConnection的区别</strong>：</p>
+<p>URLConnection 可以使用邮件、文件传输协议，而HttpURLConnection 就单指浏览器的HTTP协议。URLConnection实例不会在创建时建立实际的网络连接。</p>
+<p><strong>可能存在漏洞的点</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java">HttpURLConnection.getInputStream<br>URLConnection.getInputStream<br>Request.Get.execute<br>Request.Post.execute<br>URL.openStream<br>ImageIO.read<br>OkHttpClient.newCall.execute<br>HttpClients.execute<br>HttpClient.execute<br>……<br></code></pre></td></tr></table></figure>
+
+<ol>
+<li><p><strong>HttpURLConnection</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@WebServlet(&quot;/ssrfServlet&quot;)</span><br><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ssrfServlet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HttpServlet</span> </span>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doPost</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>    <span class="hljs-keyword">this</span>.doGet(request, response);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doGet</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>        String url = request.getParameter(<span class="hljs-string">&quot;url&quot;</span>);   <span class="hljs-comment">//接收url的传参</span><br>        String htmlContent;<br>        PrintWriter writer = response.getWriter();  <span class="hljs-comment">//获取响应的打印流对象</span><br>        URL u = <span class="hljs-keyword">new</span> URL(url);   <span class="hljs-comment">//实例化url的对象</span><br>        <span class="hljs-keyword">try</span> &#123;<br>          <span class="hljs-comment">//每次当调用此URL的协议处理程序的URLStreamHandler.openConnection(URL)方法时， 都会创建一个新的URLConnection实例。</span><br>          <span class="hljs-comment">//URLConnection实例不会在创建时建立实际的网络连接。 只会在调用URLConnection.connect()时发生。</span><br>            URLConnection urlConnection = u.openConnection(); <span class="hljs-comment">//打开一个URL连接，并运行客户端访问资源。</span><br>            HttpURLConnection httpUrl = (HttpURLConnection) urlConnection;  <span class="hljs-comment">//强转为HttpURLConnection</span><br>            BufferedReader base = <span class="hljs-keyword">new</span> BufferedReader(<span class="hljs-keyword">new</span> InputStreamReader(httpUrl.getInputStream(), <span class="hljs-string">&quot;UTF-8&quot;</span>));  <span class="hljs-comment">//获取HttpURLConnection中的资源</span><br>            StringBuffer html = <span class="hljs-keyword">new</span> StringBuffer();<br>          <span class="hljs-comment">//把base里的资源传给htmlContent</span><br>            <span class="hljs-keyword">while</span> ((htmlContent = base.readLine()) != <span class="hljs-keyword">null</span>) &#123;<br>                html.append(htmlContent);  <span class="hljs-comment">//htmlContent添加到html里面</span><br>            &#125;<br>            base.close();<br><br>            writer.println(html);<span class="hljs-comment">//响应中输出读取的资源</span><br>            writer.flush();<br><br>        &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>            e.printStackTrace();<br>            writer.println(<span class="hljs-string">&quot;请求失败&quot;</span>);<br>            writer.flush();<br>        &#125;<br>&#125;<br>  <br><span class="hljs-comment">//openConnection：每次当调用此URL的协议处理程序的URLStreamHandler.openConnection(URL)方法时， 都会创建一个新的URLConnection实例。</span><br><span class="hljs-comment">//openStream():打开到此URL的连接并返回一个用于从该连接读入的InputStream。</span><br></code></pre></td></tr></table></figure>
+
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java">String url = request.getParameter(<span class="hljs-string">&quot;picurl&quot;</span>);<span class="hljs-comment">//接收picurl的传参</span><br>StringBuffer response = <span class="hljs-keyword">new</span> StringBuffer();<br><br>URL pic = <span class="hljs-keyword">new</span> URL(url);<br>HttpURLConnection con = (HttpURLConnection) pic.openConnection();<span class="hljs-comment">//创建一个新的URLConnection并强制转换为HttpURLConnection</span><br>con.setRequestMethod(<span class="hljs-string">&quot;GET&quot;</span>);<br>con.setRequestProperty(<span class="hljs-string">&quot;User-Agent&quot;</span>, <span class="hljs-string">&quot;Mozilla/5.0&quot;</span>);<br>BufferedReader in = <span class="hljs-keyword">new</span> BufferedReader(<span class="hljs-keyword">new</span> InputStreamReader(con.getInputStream()));<span class="hljs-comment">//获取HttpURLConnection中的资源</span><br>String inputLine; <br><span class="hljs-keyword">while</span> ((inputLine = in.readLine()) != <span class="hljs-keyword">null</span>) &#123;<br>    response.append(inputLine);<span class="hljs-comment">//inputLine添加到response</span><br>  &#125;<br>in.close();<br>modelMap.put(<span class="hljs-string">&quot;resp&quot;</span>,response.toString());<br><span class="hljs-keyword">return</span> <span class="hljs-string">&quot;getimg.htm&quot;</span>;<br></code></pre></td></tr></table></figure></li>
+<li><p><strong>URLConnection</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SSRFServlet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HttpServlet</span> </span>&#123;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doGet</span><span class="hljs-params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br><br>        String url = req.getParameter(<span class="hljs-string">&quot;url&quot;</span>);   <span class="hljs-comment">//接收url的传参</span><br>        String htmlContent;<br>        PrintWriter writer = resp.getWriter();  <span class="hljs-comment">//获取响应的打印流对象</span><br>        URL u = <span class="hljs-keyword">new</span> URL(url);   <span class="hljs-comment">//实例化url的对象</span><br>        <span class="hljs-keyword">try</span> &#123;<br>            URLConnection urlConnection = u.openConnection();<span class="hljs-comment">//打开一个URL连接，并运行客户端访问资源。</span><br>            <span class="hljs-comment">//HttpURLConnection httpUrl = (HttpURLConnection) urlConnection;  //强转为HttpURLConnection</span><br>            BufferedReader base = <span class="hljs-keyword">new</span> BufferedReader(<span class="hljs-keyword">new</span> InputStreamReader(urlConnection.getInputStream(), <span class="hljs-string">&quot;UTF-8&quot;</span>));   <span class="hljs-comment">//获取url中的资源</span><br>           <br>            StringBuffer html = <span class="hljs-keyword">new</span> StringBuffer();<br>           <span class="hljs-comment">//把base里的资源传给htmlContent</span><br>            <span class="hljs-keyword">while</span> ((htmlContent = base.readLine()) != <span class="hljs-keyword">null</span>) &#123;<br>                html.append(htmlContent);  <span class="hljs-comment">//htmlContent添加到html里面</span><br>            &#125;<br>            base.close();<br><br>            writer.println(html);<span class="hljs-comment">//响应中输出读取的资源</span><br>            writer.flush();<br><br>        &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>            e.printStackTrace();<br>            writer.println(<span class="hljs-string">&quot;请求失败&quot;</span>);<br>            writer.flush();<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doPost</span><span class="hljs-params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>        <span class="hljs-keyword">super</span>.doGet(req, resp);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p><strong>imageIO</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ssrf</span> </span>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> BufferedImage <span class="hljs-title">read</span><span class="hljs-params">(URL url)</span> <span class="hljs-keyword">throws</span> IOException </span>&#123;<br>        <span class="hljs-keyword">if</span> (url == <span class="hljs-keyword">null</span>) &#123;<br>            System.out.println(<span class="hljs-string">&quot;输入内容为空&quot;</span>);<br>        &#125;<br><br><br>        InputStream  istream = url.openStream();  <span class="hljs-comment">//打开到此URL的连接并返回一个用于从该连接读入的InputStream。</span><br>        ImageInputStream stream =  ImageIO.createImageInputStream(istream);  <span class="hljs-comment">//获取文件流</span><br><br><br>        BufferedImage bi = ImageIO.read(stream);  <span class="hljs-comment">//返回 BufferedImage作为供给的解码结果</span><br><br>        <span class="hljs-keyword">return</span> bi;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@WebServlet(&quot;/httpclientServlet&quot;)</span><br><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">httpclientServlet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HttpServlet</span> </span>&#123;<br><br><br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doPost</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br><br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doGet</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>        String geturl = request.getParameter(<span class="hljs-string">&quot;url&quot;</span>);<br>      <span class="hljs-comment">//输出流 用于输出字符流数据或者二进制的字节流数据都可以</span><br>        ServletOutputStream outputStream = response.getOutputStream();<br>      <span class="hljs-comment">//ByteArrayOutputStream对byte类型数据进⾏写⼊的类 相当于⼀个中间缓冲层，将类写⼊到⽂件等其他outputStream。</span><br>        ByteArrayOutputStream os = <span class="hljs-keyword">new</span> ByteArrayOutputStream();<br>        URL url = <span class="hljs-keyword">new</span> URL(geturl);<br>      <span class="hljs-comment">//获取文件流</span><br>        BufferedImage image = ssrf.read(url);<br>			<span class="hljs-comment">//image流写到OS流</span><br>        ImageIO.write(image, <span class="hljs-string">&quot;png&quot;</span>, os);<br>      <span class="hljs-comment">//os.toByteArray()将流转换为数组</span><br>        InputStream input = <span class="hljs-keyword">new</span> ByteArrayInputStream(os.toByteArray());<br>        <span class="hljs-keyword">int</span> len;<br>        <span class="hljs-keyword">byte</span>[] bytes = <span class="hljs-keyword">new</span> <span class="hljs-keyword">byte</span>[<span class="hljs-number">1024</span>];<br>        <span class="hljs-keyword">while</span> ((len = input.read(bytes)) &gt; <span class="hljs-number">0</span>) &#123;<br>            outputStream.write(bytes, <span class="hljs-number">0</span>, len);<br>        &#125;<br><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p><strong>HttpClient</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//创建一个DefaultHttpClient的实例</span><br>CloseableHttpClient httpClient = HttpClients.createDefault();<br><span class="hljs-comment">//发送GET请求  POST: HttpPost httpPost = new HttpPost(url);</span><br>  HttpGet getRequest = <span class="hljs-keyword">new</span> HttpGet(url);<br>  HttpResponse response = httpClient.execute(getRequest);<br><br>  <span class="hljs-keyword">if</span>(response.getStatusLine().getStatusCode() == <span class="hljs-number">200</span>)<br>    &#123;<br>        HttpEntity entity = response.getEntity();<br>        <span class="hljs-keyword">return</span> EntityUtils.toByteArray(entity);<br>    &#125;<br>  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> IOException(<span class="hljs-string">&quot;Error:下载图片失败&quot;</span>);<br></code></pre></td></tr></table></figure></li>
+<li><p><strong>OkHttp</strong></p>
+<p> okhttp是一个第三方类库，用于android中请求网络</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java">String url = request.getParameter(<span class="hljs-string">&quot;url&quot;</span>);<br>OkHttpClient httpClient = <span class="hljs-keyword">new</span> OkHttpClient();<br>Request request = <span class="hljs-keyword">new</span> Request.Builder()<br>      .url(url)<br>      .build();<br>Response response = httpClient.newCall(request).execute();<br><span class="hljs-keyword">return</span> response.body().string(); <br></code></pre></td></tr></table></figure></li>
+<li><p><strong>HttpRequest</strong></p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">HttpRequest request = HttpRequest.get(<span class="hljs-string">&quot;http://www.baidu.com&quot;</span>,<span class="hljs-keyword">true</span>,<span class="hljs-string">&#x27;q&#x27;</span>,<span class="hljs-string">&quot;baseball gloves&quot;</span>,<span class="hljs-string">&quot;size&quot;</span>,<span class="hljs-number">100</span>);<br></code></pre></td></tr></table></figure></li>
+</ol>
+<p>做代码审计的时候，一般直接用自动化工具扫，或全局搜关键字。</p>
+<h3 id="防御"><a href="#防御" class="headerlink" title="防御"></a>防御</h3><ol>
+<li> 限制协议只能为http/https，防止跨协议。就是用HttpURLConnection。</li>
+<li> 对获取的URL进行判断，设置url白名单。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/SSRF/">#SSRF</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>java源代码审计-服务端请求伪造</div>
+      <div>http://example.com/2023/02/02/java源代码审计-服务端请求伪造/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>February 2, 2023</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/" title="java源代码审计-SQL注入">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">java源代码审计-SQL注入</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/05/11/struts2%E6%BC%8F%E6%B4%9Epayload%E5%8F%8A%E8%A7%A6%E5%8F%91%E5%8E%9F%E7%90%86-%E4%B8%80/" title="struts2漏洞payload及触发原理(一)">
+                        <span class="hidden-mobile">struts2漏洞payload及触发原理(一)</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

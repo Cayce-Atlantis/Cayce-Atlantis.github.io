@@ -1,0 +1,713 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言：  这几天进入了一个疯狂的划水期，作为一个十成十的菜鸟，跟着学长们见识一下CTF的乐趣所在，还真别说，真香。。。。原本是决定借这一次提高一下自己，结果被虐得体无完肤，特别是WEB方面，反序列化这一块就让我很难受，所以准备写这一篇博客纪念一下自己的菜。。。。。 参考文献：Amber小姐姐的讲解视频 正文：  献上一波自己对序列化和反序列化的理解：php中，序列化就是将一个类的对象转换成一个有一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="php反序列化使用不当造成的漏洞">
+<meta property="og:url" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="前言：  这几天进入了一个疯狂的划水期，作为一个十成十的菜鸟，跟着学长们见识一下CTF的乐趣所在，还真别说，真香。。。。原本是决定借这一次提高一下自己，结果被虐得体无完肤，特别是WEB方面，反序列化这一块就让我很难受，所以准备写这一篇博客纪念一下自己的菜。。。。。 参考文献：Amber小姐姐的讲解视频 正文：  献上一波自己对序列化和反序列化的理解：php中，序列化就是将一个类的对象转换成一个有一">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/1.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/2.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/3.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/4.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/5.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/6.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/7.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/8.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/QQ.png">
+<meta property="article:published_time" content="2021-05-09T06:07:58.000Z">
+<meta property="article:modified_time" content="2021-05-09T08:26:47.050Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/1.jpg">
+  
+  
+  
+  <title>php反序列化使用不当造成的漏洞 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="php反序列化使用不当造成的漏洞"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-09 14:07" pubdate>
+          May 9, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          11k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          95 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">php反序列化使用不当造成的漏洞</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h3><p>  这几天进入了一个疯狂的划水期，作为一个十成十的菜鸟，跟着学长们见识一下CTF的乐趣所在，还真别说，真香。。。。原本是决定借这一次提高一下自己，结果被虐得体无完肤，特别是WEB方面，反序列化这一块就让我很难受，所以准备写这一篇博客纪念一下自己的菜。。。。。</p>
+<p>参考文献：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av41677248?from=search&seid=16309505071500820353">Amber小姐姐的讲解视频</a></p>
+<h3 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h3><p>  献上一波自己对序列化和反序列化的理解：php中，序列化就是将一个类的对象转换成一个有一定序列格式的字符串，反之，反序列化就是将这一串有一定序列格式的字符串转换成一个类的对象的过程。其中，php中序列化对应的原型函数为<code>string serialize ( mixed $value )</code>，反序列化对应的原型函数为<code>string unserialize ( mixed $value )</code>。</p>
+<p>ps：对于一个类来说，它的对象可以有该类的属性和方法，但序列化的字符串只记录该对象的属性及属性值。可能在这里有点 抽象，不过下面的例子会有更详细的解释。</p>
+<p>这里先做一个序列化和反序列化的实例演示（手写的，有点挫劣）：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/1.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>代码下面阴影区就是输出的结果，同样，对于反序列化的就是</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/2.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>序列化和反序列化的常见操作便像是如此，这里先送上一波源码（其实是我懒，以后代码不小心被删了，就来这里找）：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#serialize.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySerialize</span></span><br><span class="hljs-class"></span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature1</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature2</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__construct</span>(<span class="hljs-params"><span class="hljs-variable">$nature1</span>, <span class="hljs-variable">$nature2</span></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">$this</span>-&gt;nature1 = <span class="hljs-variable">$nature1</span>;<br>        <span class="hljs-keyword">$this</span>-&gt;nature2 = <span class="hljs-variable">$nature2</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;I am method&quot;</span>;<br>	&#125;<br>&#125;<br><br><span class="hljs-variable">$target</span> = <span class="hljs-keyword">new</span> MySerialize(<span class="hljs-string">&quot;value1&quot;</span>,<span class="hljs-string">&quot;value2&quot;</span>);<br><span class="hljs-keyword">echo</span> serialize(<span class="hljs-variable">$target</span>);<br><span class="hljs-meta">?&gt;</span><br><br><br><span class="hljs-comment">#unserialize.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySerialize</span></span><br><span class="hljs-class"></span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature1</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature2</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__construct</span>(<span class="hljs-params"><span class="hljs-variable">$nature1</span>, <span class="hljs-variable">$nature2</span></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">$this</span>-&gt;nature1 = <span class="hljs-variable">$nature1</span>;<br>        <span class="hljs-keyword">$this</span>-&gt;nature2 = <span class="hljs-variable">$nature2</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__wakeup</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;wakeup&lt;br \&gt;&quot;</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;I am method&quot;</span>;<br>	&#125;<br>&#125;<br><span class="hljs-variable">$target</span> = <span class="hljs-string">&#x27;O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;&#x27;</span>;<br>var_dump(unserialize(<span class="hljs-variable">$target</span>));<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="序列化："><a href="#序列化：" class="headerlink" title="序列化："></a>序列化：</h4><p>  接下来对上面的代码做一波解释，这里先介绍一下序列化后带格式的字符串的意思，在上面的<code>serialize.php</code>运行过后，可以看到一串有规律的字符串：<code>O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;</code>，这串字符串就规定了这个对象的属性和属性值。对于一个序列化字符串，其中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">object module:<br>	O--&gt;Object，表示后面的变量的属性类型是Object类型，用法：O:size:&quot;value&quot;:num:&#123;propety module&#125;;<br>  a--&gt;Array，表示后面的变量的属性类型是Array类型，用法：a:size:&#123;propety module&#125;;<br>propety module:<br>  S--&gt;String，表示后面的变量的属性类型是String类型，用法：s:size:&quot;value&quot;;<br>  i--&gt;Integer，表示后面的变量的属性类型是Integer类型，用法：i:value;<br>  b--&gt;Boolean，表示后面的变量的属性类型是Boolean类型，用法：b:value（这里的value只有1和0）；<br>  N--&gt;NULL，表示后面的变量值为空，用法：N；<br></code></pre></td></tr></table></figure>
+
+<p>  对比上面的解释，字符串<code>O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;</code>就可以被解释为类对象<code>MySerialize</code>长度为11，有2个属性名：第一个属性名<code>nature1</code>是<code>string</code>类型，长度为7，它的属性值为<code>value1</code>，是<code>string</code>类型，长度为6；第二个属性名<code>nature2</code>是<code>string</code>类型，长度为7，它的属性值为<code>value2</code>，是<code>string</code>类型，长度为6。</p>
+<h4 id="反序列化："><a href="#反序列化：" class="headerlink" title="反序列化："></a>反序列化：</h4><p>  谈完序列化，再来说说反序列化，这是一个逆序操作，将一个序列化字符串转换成一个对象或数组的过程。反序列化中最神奇的地方就是反序列化会触发特殊的魔法函数，就好像创建类对象的时候会触发它的构造函数一样</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs php">_construct()：创建一个对象时会被调用。<br>_destruct()：销毁一个对象时会被调用。<br>_wakeup()：触发unserialize()方法时会被调用。<br>_sleep()：触发serialize()方法时会被调用。<br>_toString()：类对象被当作一个字符串使用时会被调用。<br>_get()：调出不可访问（<span class="hljs-keyword">private</span>，protect等修饰）属性时会被调用。<br>_set()：修改或写入不可访问（<span class="hljs-keyword">private</span>，protect等修饰）属性时会被调用。<br>_isset()：对不可访问（<span class="hljs-keyword">private</span>，protect等修饰）属性使用<span class="hljs-keyword">empty</span>()或<span class="hljs-keyword">isset</span>()方法时会被调用。<br>_unset()：对不可访问（<span class="hljs-keyword">private</span>，protect等修饰）属性使用<span class="hljs-keyword">unset</span>()方法时会被调用。<br>_invoke()：将实例化对象当作方法使用时会被调用。<br></code></pre></td></tr></table></figure>
+
+<h5 id="详细说明及举例："><a href="#详细说明及举例：" class="headerlink" title="详细说明及举例："></a>详细说明及举例：</h5><ol>
+<li><p><code>_construct()</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#unserialize1.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySerialize</span></span><br><span class="hljs-class"></span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature1</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature2</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__construct</span>(<span class="hljs-params"><span class="hljs-variable">$nature1</span>, <span class="hljs-variable">$nature2</span></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">$this</span>-&gt;nature1 = <span class="hljs-variable">$nature1</span>;<br>        <span class="hljs-keyword">$this</span>-&gt;nature2 = <span class="hljs-variable">$nature2</span>;<br>        <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;i am here!&quot;</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;I am method!&quot;</span>;<br>	&#125;<br>&#125;<br><span class="hljs-variable">$target</span> = <span class="hljs-keyword">new</span> MySerialize(<span class="hljs-string">&quot;value1&quot;</span>,<span class="hljs-literal">NULL</span>);<br><span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>.serialize(<span class="hljs-variable">$target</span>);<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/3.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>  按理说这个函数应该归类在序列化里面，因为它只有在创建对象的时候才会被调用，不过它也是个魔法函数，所以就将它放到这里，从上面的演示中可以看到，_construct()函数中的echo语句执行在serialize方法之前，也就是创建MySerialize对象的时候。</p>
+</li>
+<li><p><code>_destruct()</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#unserialize2.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySerialize</span></span><br><span class="hljs-class"></span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature1</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature2</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__destruct</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;&lt;br /&gt;I am here!&quot;</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;I am method&quot;</span>;<br>	&#125;<br>&#125;<br><span class="hljs-variable">$target</span> = <span class="hljs-string">&#x27;O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;&#x27;</span>;<br>var_dump(unserialize(<span class="hljs-variable">$target</span>));<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/4.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>  _destruct()方法就如同析构方法一样，在一个类执行完之后会自动调用，也就是说，如果在该方法中含有危险操作函数，那就有可能存在该函数被恶意执行的可能，比如，在该函数中写有<code>system($a)</code>方法，并且<code>$a=unserialize(可控值)</code>，那么，这里就可能通过可控值来执行操作。</p>
+</li>
+<li><p><code>_toString()</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#unserialize3.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySerialize</span></span><br><span class="hljs-class"></span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature1</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature2</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__toString</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;&lt;br /&gt;I am here!&quot;</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;I am method&quot;</span>;<br>	&#125;<br>&#125;<br><span class="hljs-variable">$target</span> = <span class="hljs-string">&#x27;O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;&#x27;</span>;<br><span class="hljs-keyword">echo</span> unserialize(<span class="hljs-variable">$target</span>);<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/5.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>  这里在执行完<code>unserialize()</code>方法后用<code>echo</code>进行输出，因为此时<code>unserialize()</code>方法的返回值是一个含该魔法函数的对象，而该对象又被当作字符串输出，所以会触发该魔法函数。同样的道理，如果该函数中含有字符串处理的危险函数，就有可能造成源码源码泄漏。比如该魔法函数中存在<code>file_get_contents($file)</code>方法，而$file变量指向某个原本不允许直接访问的文件，并且魔法函数的触发方法可控，就会造成源码泄漏。</p>
+</li>
+<li><p><code>_sleep()</code>：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#unserialize3.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MySerialize</span></span><br><span class="hljs-class"></span>&#123;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature1</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-variable">$nature2</span>;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__sleep</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">    </span>&#123;<br>        <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;i am here!&quot;</span>;<br>    &#125;<br>	<span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">method</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">	</span>&#123;<br>		<span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;I am method!&quot;</span>;<br>	&#125;<br>&#125;<br><span class="hljs-variable">$target</span> = <span class="hljs-keyword">new</span> MySerialize(<span class="hljs-string">&quot;value1&quot;</span>,<span class="hljs-number">123</span>);<br><span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;&lt;br /&gt;&quot;</span>.serialize(<span class="hljs-variable">$target</span>);<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/6.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>  这里在触发<code>serialize()</code>方法时直接触发该魔法函数，执行内部代码。这里的变量被NULL序列化，所以看到的是字符N。同样的道理，如果该魔法函数中存在危险函数，就有可能造成漏洞。比如该魔法函数中存在<code>eval()</code>方法，这样就可能造成命令执行漏洞，<code>eval()</code>中如果写有两个`` <code>符号，则里面的内容就会在DOS窗口运行，当然，前提是</code>shell_exec()`方法可用。</p>
+</li>
+<li><p><code>_wakeup()</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">#unserialize5.php<br>&lt;?php<br>class MySerialize<br>&#123;<br>	public $nature1;<br>	public $nature2;<br>	public function __wakeup()<br>    &#123;<br>        echo &quot;&lt;br &#x2F;&gt;I am here!&quot;;<br>    &#125;<br>	public function method()<br>	&#123;<br>		echo &quot;I am method&quot;;<br>	&#125;<br>&#125;<br>$target &#x3D; &#39;O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;&#39;;<br>echo unserialize($target);<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/7.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>  这里可以看到当执行<code>unserialize()</code>方法时就会执行该魔法函数，执行内部代码。因为这里的类对象不能作为一个输出对象，所以payload无效果。同理，如果该魔法函数中存在危险函数，就会造成危险操作。比如，该魔法函数中存在<code>exec()</code>方法，并且参数是可以控制的，那么就有可能造成命令执行漏洞。</p>
+</li>
+<li><p><code>_get()</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">#unserialize6.php<br>&lt;?php<br>class MySerialize<br>&#123;<br>	private $nature1;<br>	private $nature2;<br>	public function __get($nature1)<br>    &#123;<br>        echo &quot;I am here!&quot;;<br>    &#125;<br>&#125;<br>$test &#x3D; new MySerialize();<br>echo $test -&gt; $nature1.&quot;&lt;br &#x2F;&gt;&quot;;<br>$target &#x3D; &#39;O:11:&quot;MySerialize&quot;:2:&#123;s:7:&quot;nature1&quot;;s:6:&quot;value1&quot;;s:7:&quot;nature2&quot;;s:6:&quot;value2&quot;;&#125;&#39;;<br>var_dump(unserialize($target));<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/8.jpg" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+
+<p>  按常理来说，私有变量是不允许在类外使用的，这里的echo是无法使用的，但是类中存在该魔法函数，所以系统会自动调用它。同理，该魔法函数中如果存在危险函数，并且变量可控，就会造成危险操作。例如：该魔法函数中存在<code>popen()</code>方法，并且变量可控，就会造成文件内容泄漏。也可使用<code>passthru()</code>方法执行系统外部命令。</p>
+</li>
+</ol>
+<p>到这里，就是容易造成漏洞的几个函数的触发条件，剩下的几个暂时还没有做深入学习（其实是感觉剩下的几个触发条件有点苛刻，而且不常用，就不做笔记）。</p>
+<h5 id="CTF题目实例演示："><a href="#CTF题目实例演示：" class="headerlink" title="CTF题目实例演示："></a>CTF题目实例演示：</h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#Session.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-keyword">include</span> <span class="hljs-string">&#x27;Application.php&#x27;</span>;<br><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Session</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Application</span> </span>&#123;<br>    <span class="hljs-comment">//key建议为8位字符串</span><br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$eancrykey</span>                  = <span class="hljs-string">&#x27;&#x27;</span>;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$cookie_expiration</span>			= <span class="hljs-number">7200</span>;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$cookie_name</span>                = <span class="hljs-string">&#x27;ddctf_id&#x27;</span>;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$cookie_path</span>				= <span class="hljs-string">&#x27;&#x27;</span>;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$cookie_domain</span>				= <span class="hljs-string">&#x27;&#x27;</span>;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$cookie_secure</span>				= <span class="hljs-literal">FALSE</span>;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$activity</span>                   = <span class="hljs-string">&quot;DiDiCTF&quot;</span>;<br>    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">index</span>(<span class="hljs-params"></span>)</span><br><span class="hljs-function">    </span>&#123;<br>	<span class="hljs-keyword">if</span>(<span class="hljs-built_in">parent</span>::auth()) &#123;<br>            <span class="hljs-keyword">$this</span>-&gt;get_key();<br>            <span class="hljs-keyword">if</span>(<span class="hljs-keyword">$this</span>-&gt;session_read()) &#123;<br>                <span class="hljs-variable">$data</span> = <span class="hljs-string">&#x27;DiDI Welcome you %s&#x27;</span>;<br>                <span class="hljs-variable">$data</span> = sprintf(<span class="hljs-variable">$data</span>,<span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;HTTP_USER_AGENT&#x27;</span>]);<br>                <span class="hljs-built_in">parent</span>::response(<span class="hljs-variable">$data</span>,<span class="hljs-string">&#x27;sucess&#x27;</span>);<br>            &#125;<span class="hljs-keyword">else</span>&#123;<br>                <span class="hljs-keyword">$this</span>-&gt;session_create();<br>                <span class="hljs-variable">$data</span> = <span class="hljs-string">&#x27;DiDI Welcome you&#x27;</span>;<br>                <span class="hljs-built_in">parent</span>::response(<span class="hljs-variable">$data</span>,<span class="hljs-string">&#x27;sucess&#x27;</span>);<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">get_key</span>(<span class="hljs-params"></span>) </span>&#123;<br>        <span class="hljs-comment">//eancrykey  and flag under the folder</span><br>        <span class="hljs-keyword">$this</span>-&gt;eancrykey =  file_get_contents(<span class="hljs-string">&#x27;key.txt&#x27;</span>);<br>    &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">session_read</span>(<span class="hljs-params"></span>) </span>&#123;<br>        <span class="hljs-keyword">if</span>(<span class="hljs-keyword">empty</span>(<span class="hljs-variable">$_COOKIE</span>)) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">FALSE</span>;<br>        &#125;<br>        <span class="hljs-variable">$session</span> = <span class="hljs-variable">$_COOKIE</span>[<span class="hljs-keyword">$this</span>-&gt;cookie_name];<br>        <span class="hljs-keyword">if</span>(!<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$session</span>)) &#123;<br>            <span class="hljs-built_in">parent</span>::response(<span class="hljs-string">&quot;session not found&quot;</span>,<span class="hljs-string">&#x27;error&#x27;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">FALSE</span>;<br>        &#125;<br>        <span class="hljs-variable">$hash</span> = substr(<span class="hljs-variable">$session</span>,strlen(<span class="hljs-variable">$session</span>)-<span class="hljs-number">32</span>);<br>        <span class="hljs-variable">$session</span> = substr(<span class="hljs-variable">$session</span>,<span class="hljs-number">0</span>,strlen(<span class="hljs-variable">$session</span>)-<span class="hljs-number">32</span>);<br>        <span class="hljs-keyword">if</span>(<span class="hljs-variable">$hash</span> !== md5(<span class="hljs-keyword">$this</span>-&gt;eancrykey.<span class="hljs-variable">$session</span>)) &#123;<br>            <span class="hljs-built_in">parent</span>::response(<span class="hljs-string">&quot;the cookie data not match&quot;</span>,<span class="hljs-string">&#x27;error&#x27;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">FALSE</span>;<br>        &#125;<br>        <span class="hljs-variable">$session</span> = unserialize(<span class="hljs-variable">$session</span>);<br>        <span class="hljs-keyword">if</span>(!is_array(<span class="hljs-variable">$session</span>) <span class="hljs-keyword">OR</span> !<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$session</span>[<span class="hljs-string">&#x27;session_id&#x27;</span>]) <span class="hljs-keyword">OR</span> !<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$session</span>[<span class="hljs-string">&#x27;ip_address&#x27;</span>]) <span class="hljs-keyword">OR</span> !<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$session</span>[<span class="hljs-string">&#x27;user_agent&#x27;</span>]))&#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">FALSE</span>;<br>        &#125;<br>        <span class="hljs-keyword">if</span>(!<span class="hljs-keyword">empty</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&quot;nickname&quot;</span>])) &#123;<br>            <span class="hljs-variable">$arr</span> = <span class="hljs-keyword">array</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&quot;nickname&quot;</span>],<span class="hljs-keyword">$this</span>-&gt;eancrykey);<br>            <span class="hljs-variable">$data</span> = <span class="hljs-string">&quot;Welcome my friend %s&quot;</span>;<br>            <span class="hljs-keyword">foreach</span> (<span class="hljs-variable">$arr</span> <span class="hljs-keyword">as</span> <span class="hljs-variable">$k</span> =&gt; <span class="hljs-variable">$v</span>) &#123;<br>                <span class="hljs-variable">$data</span> = sprintf(<span class="hljs-variable">$data</span>,<span class="hljs-variable">$v</span>);<br>            &#125;<br>            <span class="hljs-built_in">parent</span>::response(<span class="hljs-variable">$data</span>,<span class="hljs-string">&quot;Welcome&quot;</span>);<br>        &#125;<br>        <span class="hljs-keyword">if</span>(<span class="hljs-variable">$session</span>[<span class="hljs-string">&#x27;ip_address&#x27;</span>] != <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;REMOTE_ADDR&#x27;</span>]) &#123;<br>            <span class="hljs-built_in">parent</span>::response(<span class="hljs-string">&#x27;the ip addree not match&#x27;</span>.<span class="hljs-string">&#x27;error&#x27;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">FALSE</span>;<br>        &#125;<br>        <span class="hljs-keyword">if</span>(<span class="hljs-variable">$session</span>[<span class="hljs-string">&#x27;user_agent&#x27;</span>] != <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;HTTP_USER_AGENT&#x27;</span>]) &#123;<br>            <span class="hljs-built_in">parent</span>::response(<span class="hljs-string">&#x27;the user agent not match&#x27;</span>,<span class="hljs-string">&#x27;error&#x27;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">FALSE</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">TRUE</span>;<br>    &#125;<br>    <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">session_create</span>(<span class="hljs-params"></span>) </span>&#123;<br>        <span class="hljs-variable">$sessionid</span> = <span class="hljs-string">&#x27;&#x27;</span>;<br>        <span class="hljs-keyword">while</span>(strlen(<span class="hljs-variable">$sessionid</span>) &lt; <span class="hljs-number">32</span>) &#123;<br>            <span class="hljs-variable">$sessionid</span> .= mt_rand(<span class="hljs-number">0</span>,mt_getrandmax());<br>        &#125;<br>        <span class="hljs-variable">$userdata</span> = <span class="hljs-keyword">array</span>(<br>            <span class="hljs-string">&#x27;session_id&#x27;</span> =&gt; md5(uniqid(<span class="hljs-variable">$sessionid</span>,<span class="hljs-literal">TRUE</span>)),<br>            <span class="hljs-string">&#x27;ip_address&#x27;</span> =&gt; <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;REMOTE_ADDR&#x27;</span>],<br>            <span class="hljs-string">&#x27;user_agent&#x27;</span> =&gt; <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;HTTP_USER_AGENT&#x27;</span>],<br>            <span class="hljs-string">&#x27;user_data&#x27;</span> =&gt; <span class="hljs-string">&#x27;&#x27;</span>,<br>        );<br>        <span class="hljs-variable">$cookiedata</span> = serialize(<span class="hljs-variable">$userdata</span>);<br>        <span class="hljs-variable">$cookiedata</span> = <span class="hljs-variable">$cookiedata</span>.md5(<span class="hljs-keyword">$this</span>-&gt;eancrykey.<span class="hljs-variable">$cookiedata</span>);<br>        <span class="hljs-variable">$expire</span> = <span class="hljs-keyword">$this</span>-&gt;cookie_expiration + time();<br>        setcookie(<br>            <span class="hljs-keyword">$this</span>-&gt;cookie_name,<br>            <span class="hljs-variable">$cookiedata</span>,<br>            <span class="hljs-variable">$expire</span>,<br>            <span class="hljs-keyword">$this</span>-&gt;cookie_path,<br>            <span class="hljs-keyword">$this</span>-&gt;cookie_domain,<br>            <span class="hljs-keyword">$this</span>-&gt;cookie_secure<br>            );<br>    &#125;<br>&#125;<br><span class="hljs-variable">$ddctf</span> = <span class="hljs-keyword">new</span> Session();<br><span class="hljs-variable">$ddctf</span>-&gt;index();<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>  在这个文件中，可以看到它包含了Application.php文件，且接收进来的数据都通过cookie传送一个序列化字符串，并且通过<code>$session = unserialize($session);</code>将对象反序列化，也就是这个部分是我们可以利用的，再看看Application.php文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-comment">#Application.php</span><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-class"><span class="hljs-keyword">Class</span> <span class="hljs-title">Application</span> </span>&#123;<br>    <span class="hljs-keyword">var</span> <span class="hljs-variable">$path</span> = <span class="hljs-string">&#x27;&#x27;</span>;<br>    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">response</span>(<span class="hljs-params"><span class="hljs-variable">$data</span>, <span class="hljs-variable">$errMsg</span> = <span class="hljs-string">&#x27;success&#x27;</span></span>) </span>&#123;<br>        <span class="hljs-variable">$ret</span> = [<span class="hljs-string">&#x27;errMsg&#x27;</span> =&gt; <span class="hljs-variable">$errMsg</span>,<br>            <span class="hljs-string">&#x27;data&#x27;</span> =&gt; <span class="hljs-variable">$data</span>];<br>        <span class="hljs-variable">$ret</span> = json_encode(<span class="hljs-variable">$ret</span>);<br>        header(<span class="hljs-string">&#x27;Content-type: application/json&#x27;</span>);<br>        <span class="hljs-keyword">echo</span> <span class="hljs-variable">$ret</span>;<br>    &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">auth</span>(<span class="hljs-params"></span>) </span>&#123;<br>        <span class="hljs-variable">$DIDICTF_ADMIN</span> = <span class="hljs-string">&#x27;admin&#x27;</span>;<br>        <span class="hljs-keyword">if</span>(!<span class="hljs-keyword">empty</span>(<span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;HTTP_DIDICTF_USERNAME&#x27;</span>]) &amp;&amp; <span class="hljs-variable">$_SERVER</span>[<span class="hljs-string">&#x27;HTTP_DIDICTF_USERNAME&#x27;</span>] == <span class="hljs-variable">$DIDICTF_ADMIN</span>) &#123;<br>            <span class="hljs-keyword">$this</span>-&gt;response(<span class="hljs-string">&#x27;您当前当前权限为管理员----请访问:app/fL2XID2i0Cdh.php&#x27;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">TRUE</span>;<br>        &#125;<span class="hljs-keyword">else</span>&#123;<br>            <span class="hljs-keyword">$this</span>-&gt;response(<span class="hljs-string">&#x27;抱歉，您没有登陆权限，请获取权限后访问-----&#x27;</span>,<span class="hljs-string">&#x27;error&#x27;</span>);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">TRUE</span>;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">private</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sanitizepath</span>(<span class="hljs-params"><span class="hljs-variable">$path</span></span>) </span>&#123;<br>    <span class="hljs-variable">$path</span> = trim(<span class="hljs-variable">$path</span>);<br>    <span class="hljs-variable">$path</span>=str_replace(<span class="hljs-string">&#x27;../&#x27;</span>,<span class="hljs-string">&#x27;&#x27;</span>,<span class="hljs-variable">$path</span>);<br>    <span class="hljs-variable">$path</span>=str_replace(<span class="hljs-string">&#x27;..\\&#x27;</span>,<span class="hljs-string">&#x27;&#x27;</span>,<span class="hljs-variable">$path</span>);<br>    <span class="hljs-keyword">return</span> <span class="hljs-variable">$path</span>;<br>&#125;<br><span class="hljs-keyword">public</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">__destruct</span>(<span class="hljs-params"></span>) </span>&#123;<br>    <span class="hljs-keyword">if</span>(<span class="hljs-keyword">empty</span>(<span class="hljs-keyword">$this</span>-&gt;path)) &#123;<br>        <span class="hljs-keyword">exit</span>();<br>    &#125;<span class="hljs-keyword">else</span>&#123;<br>        <span class="hljs-variable">$path</span> = <span class="hljs-keyword">$this</span>-&gt;sanitizepath(<span class="hljs-keyword">$this</span>-&gt;path);<br>        <span class="hljs-keyword">if</span>(strlen(<span class="hljs-variable">$path</span>) !== <span class="hljs-number">18</span>) &#123;<br>            <span class="hljs-keyword">exit</span>();<br>        &#125;<br>        <span class="hljs-keyword">$this</span>-&gt;response(<span class="hljs-variable">$data</span>=file_get_contents(<span class="hljs-variable">$path</span>),<span class="hljs-string">&#x27;Congratulations&#x27;</span>);<br>    &#125;<br>    <span class="hljs-keyword">exit</span>();<br>&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>  这里有一个魔法函数<code>_destruct()</code>，该函数在销毁对象时触发，也就是说只要反序列化对象是我们这个类Application的对象，该函数就会被执行，现在思路就有了，构造cookie为Application的对象，并设置$path路径为要访问的路径就会触发<code>file_get_contents()</code>方法，从而得到文件的值。</p>
+<p>  当然这道题还要绕过其他的一些限制，不过今天的重点不在解这道题，而是要利用反序列化漏洞，这里再献上cookie部分的payload：<code>O:11:&quot;Application&quot;:1:&#123;s:4:&quot;path&quot;;s:8:&quot;flag.php&quot;;&#125;</code>。</p>
+<h3 id="心得总结："><a href="#心得总结：" class="headerlink" title="心得总结："></a>心得总结：</h3><p>  关于反序列化部分我学的还是不够精通，有些部分理解的不够透彻，但我觉得只要理解了被反序列化的类对象所能执行的魔法函数在什么条件下触发，就可以入门这个漏洞了。而且这个漏洞利用的前提：</p>
+<ol>
+<li>类的对象有被反序列化的过程；</li>
+<li>该类中含有魔法函数；</li>
+<li>该魔法函数中有危险函数；</li>
+<li>过滤条件不够完整。</li>
+</ol>
+<p>  以上内容就是我对反序列化的理解，如果哪里不对，请大佬们多多批评～～～～～谢谢🙏大佬！</p>
+<img src="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/QQ.png" srcset="/img/loading.gif" lazyload class="" title="php反序列化使用不当造成的漏洞">
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>php反序列化使用不当造成的漏洞</div>
+      <div>http://example.com/2021/05/09/php反序列化使用不当造成的漏洞/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 9, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/09/CSRF%E5%92%8CSSRF%E5%B8%A6%E6%9D%A5%E7%9A%84WEB%E6%BC%8F%E6%B4%9E/" title="CSRF和SSRF带来的WEB漏洞">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CSRF和SSRF带来的WEB漏洞</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/%E5%AF%B9zip%E5%8E%8B%E7%BC%A9%E5%8C%85%E9%80%9A%E7%94%A8%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AE%A4%E8%AF%86/" title="对zip压缩包通用格式的认识">
+                        <span class="hidden-mobile">对zip压缩包通用格式的认识</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

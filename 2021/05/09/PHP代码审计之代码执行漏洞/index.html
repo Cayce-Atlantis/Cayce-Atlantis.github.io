@@ -1,0 +1,662 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="前言：  这几天过的是相当的充分，不过终于是腾出时间来记录学习笔记了，继上次的特殊注入之后，这次准备记录一下PHP代码中几个高危函数使用不当引起的漏洞。 参考文献：水清云影的教学 正文：  关于代码执行漏洞的解释：代码执行漏洞是指对高危函数传参时过滤不当，字符串被当作代码执行引起的代码注入漏洞。   关于代码执行漏洞的利用条件：一般来说要满足三个基础条件，一是存在可以将字符串转换成代码执行的高危函">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP代码审计之代码执行漏洞">
+<meta property="og:url" content="http://example.com/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="前言：  这几天过的是相当的充分，不过终于是腾出时间来记录学习笔记了，继上次的特殊注入之后，这次准备记录一下PHP代码中几个高危函数使用不当引起的漏洞。 参考文献：水清云影的教学 正文：  关于代码执行漏洞的解释：代码执行漏洞是指对高危函数传参时过滤不当，字符串被当作代码执行引起的代码注入漏洞。   关于代码执行漏洞的利用条件：一般来说要满足三个基础条件，一是存在可以将字符串转换成代码执行的高危函">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/1.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/2.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/3.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/QQ.png">
+<meta property="article:published_time" content="2021-05-09T06:08:56.000Z">
+<meta property="article:modified_time" content="2021-05-09T08:24:48.508Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/1.jpg">
+  
+  
+  
+  <title>PHP代码审计之代码执行漏洞 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PHP代码审计之代码执行漏洞"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-09 14:08" pubdate>
+          May 9, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">PHP代码审计之代码执行漏洞</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h1><p>  这几天过的是相当的充分，不过终于是腾出时间来记录学习笔记了，继上次的特殊注入之后，这次准备记录一下PHP代码中几个高危函数使用不当引起的漏洞。</p>
+<p>参考文献：<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/av48675526/?p=8">水清云影的教学</a></p>
+<h1 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h1><p>  关于代码执行漏洞的解释：代码执行漏洞是指对高危函数传参时过滤不当，字符串被当作代码执行引起的代码注入漏洞。</p>
+<p>  关于代码执行漏洞的利用条件：一般来说要满足三个基础条件，一是存在可以将字符串转换成代码执行的高危函数，二是用户可以直接或间接控制该字符串，三是对该字符串的过滤不当。</p>
+<h3 id="常见PHP高危函数："><a href="#常见PHP高危函数：" class="headerlink" title="常见PHP高危函数："></a>常见PHP高危函数：</h3><ol>
+<li><p>代码执行函数：<code>eval()和assert()</code></p>
+<p>1）<code>bool eval(mixed phpcode)</code>：把字符串按照 PHP 代码来计算。该字符串必须是合法的 PHP 代码，且必须以分号结尾。如果没有在代码字符串中调用 return 语句，则返回 NULL。如果代码中存在解析错误，则 eval() 函数返回 false。</p>
+<p>2）<code>bool assert ( mixed $assertion [Throwable $exception] )</code>如果 <code>assertion</code> ：如果 <code>assertion</code> 是字符串，它将会被 <strong>assert()</strong> 当做 PHP 代码来执行。</p>
+</li>
+<li><p>回调函数：<code>call_user_func()、call_user_func_array()和array_map()</code></p>
+<p>1）<code>mixed call_user_func ( callable $callback [, mixed $parameter [, mixed $... ]] )</code>：把第一个参数作为回调函数调用。</p>
+<p>2）<code>mixed call_user_func_array ( callable $callback , array $param_arr )</code>：把第一个参数作为回调函数（<code>callback</code>）调用，把参数数组作（<code>param_arr</code>）为回调函数的的参数传入。</p>
+<p>3）<code>array array_map ( callable $callback , array $array1 [, array $... ] )</code>：返回数组，是为 <code>array1</code> 每个元素应用 <code>callback</code>函数之后的数组。 <code>callback</code> 函数形参的数量和传给 <strong>array_map()</strong> 数组数量，两者必须一样。</p>
+</li>
+<li><p>动态执行函数：函数名和参数都由动态变量实现</p>
+<p>1）定义一个函数；</p>
+<p>2）将函数名（字符串）赋值给一个变量；</p>
+<p>3）使用变量名代替函数名调用函数。</p>
+</li>
+</ol>
+<h3 id="高危函数使用实例："><a href="#高危函数使用实例：" class="headerlink" title="高危函数使用实例："></a>高危函数使用实例：</h3><h5 id="eval-和assert"><a href="#eval-和assert" class="headerlink" title="eval()和assert()"></a><code>eval()和assert()</code></h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">eval-assert.php<br>&lt;?php<br>$shell&#x3D;$_GET[&#39;shell&#39;];<br>eval($shell);<br>?&gt;<br><br>&lt;?php<br>$shell&#x3D;$_GET[&#39;shell&#39;];<br>assert($shell);<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>两个函数使用效果类似，如下图：</p>
+<img src="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/1.jpg" srcset="/img/loading.gif" lazyload class="" title="PHP代码审计之代码执行漏洞">
+
+<p>  <code>eval()和assert()</code>两个函数在执行php语句的效果方面是相同的，但eval()函数的参数必须以分号结尾，assert()可以不用，毕竟这个函数原意是用来断言的。</p>
+<h5 id="call-user-func-、call-user-func-array-和array-map"><a href="#call-user-func-、call-user-func-array-和array-map" class="headerlink" title="call_user_func()、call_user_func_array()和array_map()"></a><code>call_user_func()、call_user_func_array()和array_map()</code></h5><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs php">callback.php<br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callback</span>(<span class="hljs-params"></span>)</span>&#123;<br>	<span class="hljs-variable">$shell</span>=<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;shell&#x27;</span>];<br>	<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$shell</span>);<br>&#125;<br>@call_user_func(<span class="hljs-string">&#x27;callback&#x27;</span>,<span class="hljs-variable">$shell</span>);<br><span class="hljs-meta">?&gt;</span><br><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callback</span>(<span class="hljs-params"></span>)</span>&#123;<br>	<span class="hljs-variable">$shell</span>=<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;shell&#x27;</span>];<br>	<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$shell</span>);<br>&#125;<br>@call_user_func_array(<span class="hljs-string">&#x27;callback&#x27;</span>,<span class="hljs-keyword">array</span>(<span class="hljs-variable">$shell</span>));<br><span class="hljs-meta">?&gt;</span><br><br><span class="hljs-meta">&lt;?php</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callback</span>(<span class="hljs-params"></span>)</span>&#123;<br>	<span class="hljs-variable">$shell</span>=<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;shell&#x27;</span>];<br>	<span class="hljs-keyword">eval</span>(<span class="hljs-variable">$shell</span>);<br>&#125;<br>@array_map(<span class="hljs-string">&#x27;callback&#x27;</span>,<span class="hljs-keyword">array</span>(<span class="hljs-variable">$shell</span>));<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>三个代码的运行的效果类似，如下图：</p>
+<img src="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/2.jpg" srcset="/img/loading.gif" lazyload class="" title="PHP代码审计之代码执行漏洞">
+
+<p>  这三个函数都是将第一个参数当作一个方法名，第二个参数当作该方法的内部参数。不同的是第一个函数接受的回调内部参数是单个变量，而后两个函数接受的回调内部参数必须是数组类型。</p>
+<h5 id="动态执行函数"><a href="#动态执行函数" class="headerlink" title="动态执行函数"></a>动态执行函数</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">run.php<br>&lt;?php<br>$_GET[&#39;func&#39;]($_GET[&#39;shell&#39;]);<br>?&gt;<br><br>&lt;?php<br>$func&#x3D;$_GET[&#39;func&#39;];<br>$shell&#x3D;$_GET[&#39;shell&#39;];<br>$func($shell);<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>两段代码执行效果类似，如下图：</p>
+<img src="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/3.jpg" srcset="/img/loading.gif" lazyload class="" title="PHP代码审计之代码执行漏洞">
+
+<p>  关键就是能控制函数名和参数，当函数名是个可控变量的时候，该部分的输出就能被改成php中各类高危函数，造成代码执行漏洞。</p>
+<h4 id="代码执行漏洞的防范："><a href="#代码执行漏洞的防范：" class="headerlink" title="代码执行漏洞的防范："></a>代码执行漏洞的防范：</h4><p>  不管是哪种代码执行漏洞，必定会牵扯到参数被利用的地方，只要对用户的传参进行各方面的过滤，或者直接将代码写死，就能有效预防代码执行漏洞的出现。</p>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>  对作为一个小白的我来说，对代码执行漏洞的理解不是太过于深入，以上就是目前的我所理解的代码执行漏洞，如果有什么不完整或不正确的地方，希望大佬们能多多批评：</p>
+<img src="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/QQ.png" srcset="/img/loading.gif" lazyload class="" title="PHP代码审计之代码执行漏洞">
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PHP代码审计之代码执行漏洞</div>
+      <div>http://example.com/2021/05/09/PHP代码审计之代码执行漏洞/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 9, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/09/PHP%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1%E4%B9%8B%E5%91%BD%E4%BB%A4%E6%89%A7%E8%A1%8C%E6%BC%8F%E6%B4%9E/" title="PHP代码审计之命令执行漏洞">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PHP代码审计之命令执行漏洞</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E4%B9%8B%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5%E3%80%81%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5%E5%8F%8A%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5/" title="SQL注入漏洞之文件写入、宽字节注入及二次注入">
+                        <span class="hidden-mobile">SQL注入漏洞之文件写入、宽字节注入及二次注入</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

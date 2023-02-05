@@ -1,0 +1,738 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="一、第一个汇编语言程序程序执行两个数相加，并将结果保存在寄存器中。程序名称为AddTwo： 123456main PROC		mov eax,5							;将数字5送入eax寄存器		add eax,6							;eax寄存器加6				INVOKE ExitProcess,0				;程序结束main ENDP  现在按照一次一行代码的方法来仔细查看这段程序：    第1行开始main程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="汇编语言基础指令">
+<meta property="og:url" content="http://example.com/2022/01/13/%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80%E5%9F%BA%E7%A1%80%E6%8C%87%E4%BB%A4/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="一、第一个汇编语言程序程序执行两个数相加，并将结果保存在寄存器中。程序名称为AddTwo： 123456main PROC		mov eax,5							;将数字5送入eax寄存器		add eax,6							;eax寄存器加6				INVOKE ExitProcess,0				;程序结束main ENDP  现在按照一次一行代码的方法来仔细查看这段程序：    第1行开始main程">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-01-13T03:21:39.000Z">
+<meta property="article:modified_time" content="2022-01-25T03:30:48.131Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>汇编语言基础指令 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="汇编语言基础指令"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-01-13 11:21" pubdate>
+          January 13, 2022 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">汇编语言基础指令</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="一、第一个汇编语言程序"><a href="#一、第一个汇编语言程序" class="headerlink" title="一、第一个汇编语言程序"></a>一、第一个汇编语言程序</h1><p>程序执行两个数相加，并将结果保存在寄存器中。程序名称为AddTwo：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs assembly">main PROC<br>		mov eax,5							;将数字5送入eax寄存器<br>		add eax,6							;eax寄存器加6<br>		<br>		INVOKE ExitProcess,0				;程序结束<br>main ENDP<br></code></pre></td></tr></table></figure>
+
+<p>现在按照一次一行代码的方法来仔细查看这段程序：</p>
+<ul>
+<li>  第1行开始main程序（主程序），即程序的入口；</li>
+<li>  第2行将数字5送入eax寄存器；</li>
+<li>  第3行把6加到eax的值上，得到新值11；</li>
+<li>  第5行调用Windows服务（也被称为函数）ExitProcess停止程序，并将控制权交还给操作系统；</li>
+<li>  第6行是主程序结束的标记。</li>
+</ul>
+<p>大家可能已经注意到了程序中包含的注释，它总是用分号开头。程序的顶部省略了一些声明。稍后会予以说明，不过从本质上说，这是一个可以用的程序。</p>
+<p>它不会将全部信息显示在屏幕上，但是借助工具程序调试器的运行，程序员可以按一次一行代码的方式执行程序，并查看寄存器的值。</p>
+<h5 id="添加一个变量"><a href="#添加一个变量" class="headerlink" title="添加一个变量"></a>添加一个变量</h5><p>现在让这个程序变得有趣些，将加法运算的结果保存在变量sum中。要实现这一点，需要增加一些标记，或声明，用来标识程序的代码和数据区：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs assembly">.data													;数据区<br>sum DWORD 0										;定义名为sum的变量<br><br>.code													;代码区<br>main PROC<br>		mov eax,5							;将数字5送入eax寄存器<br>		add eax,6							;eax寄存器加6<br>		mox sum,eax<br>		<br>		INVOKE ExitProcess,0				;程序结束<br>main ENDP<br></code></pre></td></tr></table></figure>
+
+<p>变量sum在第2行进行了声明，其大小为32位，使用了关键字DWORD。汇编语言中有很多这样的大小关键字次，其作用或多或少与数据类型一样。</p>
+<p>但是与程序员可能熟悉的类型相比它们没有那么 具体，比如int、double、float等等。这些关键字只限制大小，并不检查变量中存放的内容。程序员拥有完全控制权。</p>
+<p>那些被.code和.data伪指令标记的代码和数据区，被称为段。即程序有代码段和数据段。</p>
+<h1 id="二、汇编语言常量"><a href="#二、汇编语言常量" class="headerlink" title="二、汇编语言常量"></a>二、汇编语言常量</h1><p>常量（constant）是程序中使用的一个确定数值，在汇编阶段就可以确定，直接编码与指令代码中，不是保存在存储器中可变的变量，因为是编码在指令中的量，和指令一起存储了，所以不用单独开辟主存空间，所以也就没法动态改变它了，这也是高级语言常量无法修改的原因。</p>
+<h3 id="整数常量"><a href="#整数常量" class="headerlink" title="整数常量"></a>整数常量</h3><p>整数常量（integer literal）（又称为整数常量（integer constant））由一个可选前置符号、一个或多个数字，以及一个指明其基数的可选基数字符构成：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">[&#123;+|-&#125;] digits [radix]<br></code></pre></td></tr></table></figure>
+
+<p>由此，比如26就是一个有效的整数常量。它没有基数，所以假设其是十进制形式。如果想要表示十六进制数26，就将其写为26h。同样，数字1101可以被看做是十进制值，除非在其末尾添加“b”，使其成为1101b（二进制）。下表列出了可能的基数数值：</p>
+<table>
+<thead>
+<tr>
+<th>h</th>
+<th>十六进制</th>
+<th>r</th>
+<th>编码实数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>q/o</td>
+<td>八进制</td>
+<td>t</td>
+<td>十进制（备用）</td>
+</tr>
+<tr>
+<td>d</td>
+<td>十进制</td>
+<td>y</td>
+<td>二进制（备用）</td>
+</tr>
+<tr>
+<td>b</td>
+<td>二进制</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>下面这些整数常量声明了各种基数。每行都有注释：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs assembly">26								;十进制<br>26d								;十进制<br>11010011b					;二进制<br>42q								;八进制<br>1Ah								;十六进制<br>0A3h							;十六进制<br></code></pre></td></tr></table></figure>
+
+<p>以字母开头的十六进制数必须加个前置0，以防编译器将其解释为标识符。</p>
+<h3 id="整型常量表达式"><a href="#整型常量表达式" class="headerlink" title="整型常量表达式"></a>整型常量表达式</h3><p>整型常量表达式（constant integer expression）是一种算术表达式，它包含了整数常量的算术运算符每个表达式的计算必须是一个整数，并可用32位（从0到FFFFFFFFh）来存放。</p>
+<p>下表列出了算术运算符，并按照从高(1)到低(4)的顺序给出了它们的优先级。对整型常量表达式而言很重要的是，要意识到它们只在汇编时计算。这里将它们简称为整数表达式。</p>
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>名称</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>()</td>
+<td>圆括号</td>
+<td>1</td>
+</tr>
+<tr>
+<td>+,-</td>
+<td>一元加、减</td>
+<td>2</td>
+</tr>
+<tr>
+<td>*, /</td>
+<td>乘、除</td>
+<td>3</td>
+</tr>
+<tr>
+<td>MOD</td>
+<td>取模</td>
+<td>3</td>
+</tr>
+<tr>
+<td>+, -</td>
+<td>加、减</td>
+<td>4</td>
+</tr>
+</tbody></table>
+<p>运算符优先级（operator precedence）是指，当一个表达式包含两个或多个运算符时，这些操作的执行顺序。下面是一些表达式和它们的执行顺序：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs assembly">4+5*2			;乘法，加法<br>12-1 MOD 5;取模，减法<br>-5+2			;一元减法，加法<br>(4+2)*6		;加法，乘法<br></code></pre></td></tr></table></figure>
+
+<p>下面给出了一些有效表达式和它们的值：</p>
+<table>
+<thead>
+<tr>
+<th>表达式</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>16/5</td>
+<td>3</td>
+</tr>
+<tr>
+<td>-(3+4) * (6-1 )</td>
+<td>-35</td>
+</tr>
+<tr>
+<td>-3+4*6- 1</td>
+<td>20</td>
+</tr>
+<tr>
+<td>25 mod 3</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<h3 id="实数常量"><a href="#实数常量" class="headerlink" title="实数常量"></a>实数常量</h3><p>实数常量（real number literal）（又称为浮点数常量（float-point literal））用于表示十进制实数和编码（十六进制）实数。十进制实数包含一个可选符号，其后跟随一个整数，一个十进制小数点，一个可选的表示小数部分的整数，和一个可选的指数：</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>汇编语言基础指令</div>
+      <div>http://example.com/2022/01/13/汇编语言基础指令/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>January 13, 2022</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2022/04/22/MacOS-%E9%87%8D%E8%A3%85Python2%E5%AF%BC%E8%87%B4pip2%E6%B7%B7%E4%B9%B1/" title="MacOS 重装Python2导致pip2混乱">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MacOS 重装Python2导致pip2混乱</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/01/04/x86%E5%A4%84%E7%90%86%E5%99%A8%E6%9E%B6%E6%9E%84/" title="x86处理器架构">
+                        <span class="hidden-mobile">x86处理器架构</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

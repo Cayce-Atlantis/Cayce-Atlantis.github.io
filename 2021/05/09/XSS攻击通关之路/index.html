@@ -1,0 +1,720 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="XSS攻击通关之路前言：  之前去郑州学习的时候看了一套比较系统的XSS注入的视频，简直是要膜拜做这个视频的人，以前会的XSS注入测试跟着一比简直是关公门前耍大刀，不仅刷新了以前对这个注入的理解，还涨了不少姿势。看来以后这种学习大会一定要多去去见识见识，没有什么比这提升更快了我觉得。。。。。。 正文：  刚开始还是先在这里记录一下XSS注入的意义和危害吧：   XSS攻击又叫跨站脚本攻击，它是一种">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XSS攻击通关之路">
+<meta property="og:url" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="XSS攻击通关之路前言：  之前去郑州学习的时候看了一套比较系统的XSS注入的视频，简直是要膜拜做这个视频的人，以前会的XSS注入测试跟着一比简直是关公门前耍大刀，不仅刷新了以前对这个注入的理解，还涨了不少姿势。看来以后这种学习大会一定要多去去见识见识，没有什么比这提升更快了我觉得。。。。。。 正文：  刚开始还是先在这里记录一下XSS注入的意义和危害吧：   XSS攻击又叫跨站脚本攻击，它是一种">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level2.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level3.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level5.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level8.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level11_1.jpg">
+<meta property="og:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/QQ.png">
+<meta property="article:published_time" content="2021-05-09T06:07:01.000Z">
+<meta property="article:modified_time" content="2021-05-09T08:32:58.048Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg">
+  
+  
+  
+  <title>XSS攻击通关之路 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="XSS攻击通关之路"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-09 14:07" pubdate>
+          May 9, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.5k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          47 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">XSS攻击通关之路</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="XSS攻击通关之路"><a href="#XSS攻击通关之路" class="headerlink" title="XSS攻击通关之路"></a>XSS攻击通关之路</h1><h3 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h3><p>  之前去郑州学习的时候看了一套比较系统的XSS注入的视频，简直是要膜拜做这个视频的人，以前会的XSS注入测试跟着一比简直是关公门前耍大刀，不仅刷新了以前对这个注入的理解，还涨了不少姿势。看来以后这种学习大会一定要多去去见识见识，没有什么比这提升更快了我觉得。。。。。。</p>
+<h3 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h3><p>  刚开始还是先在这里记录一下XSS注入的意义和危害吧：</p>
+<p>  XSS攻击又叫跨站脚本攻击，它是一种经常出现在WEB应用中的计算机安全漏洞，它允许恶意web用户将代码植入到提供给其它用户使用的页面中。比如这些代码包括HTML代码和客户端脚本。主要利用的就是JavaScript，对于hacker来说，XSS就是一种新生的”缓冲区溢出攻击“，而JavaScript就是这个攻击中的ShellCode。这个比喻确实很形象。</p>
+<h5 id="XSS攻击可能产生的危害："><a href="#XSS攻击可能产生的危害：" class="headerlink" title="XSS攻击可能产生的危害："></a>XSS攻击可能产生的危害：</h5><ol>
+<li>盗取各类用户帐号，如机器登录帐号、用户网银帐号、各类管理员帐号</li>
+<li>控制企业数据，包括读取、篡改、添加、删除企业敏感数据的能力</li>
+<li>盗窃企业重要的具有商业价值的资料</li>
+<li>非法转账</li>
+<li>强制发送电子邮件</li>
+<li>网站挂马</li>
+<li>控制受害者机器向其它网站发起攻击</li>
+</ol>
+<h5 id="XSS攻击的分类："><a href="#XSS攻击的分类：" class="headerlink" title="XSS攻击的分类："></a>XSS攻击的分类：</h5><ol>
+<li>DOM型：这是一种hacker和受害用户直接交互的本地利用漏洞，简单说就是hacker给某个特定用户发送了一串含有ShellCode的URL，用户不小心点开该URL，hacker的ShellCode在用户的客户端上被触发执行，利用JavaScript打开一个具有某种漏洞的HTML界面并安装在用户的客户端界面上。</li>
+<li>反射型：这是一种hacker通过第三方服务器与受害用户交互的服务端利用漏洞，简单说就是hacker发现在某个服务端网站上存在反射型的XSS漏洞（也就是客户端的请求数据的响应结果直接经过服务端返回的URL，直接返回给客户端浏览器），伪造一个含有ShellCode的URL，并以服务端的名义发送给用户，用户在点开之后就会触发ShellCode，JavaScript就会将用户的信息传给hacker伪造的站点。</li>
+<li>存储型：这是一个hacker利用服务端数据库窃取用户信息的XSS漏洞，某服务端未完全过滤ShellCode，并允许用户在站点发布和浏览信息，hacker利用这一点将ShellCode存入数据库，站点在解析的时候就会执行该ShellCode，阅读hacker发布信息的用户就有可能被窃取cookie或者其他信息。</li>
+</ol>
+<h5 id="XSS攻击常见利用方式："><a href="#XSS攻击常见利用方式：" class="headerlink" title="XSS攻击常见利用方式："></a>XSS攻击常见利用方式：</h5><p>  接下来使用的都是xss在线训练链接</p>
+<ol>
+<li><p>最简单的就是普通的GET型XSS，这里描述参数不加密的URL：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">http:&#x2F;&#x2F;test.xss.tv&#x2F;level1.php?name&#x3D;&lt;script&gt;alert(&#x2F;xss&#x2F;)&lt;&#x2F;script&gt;<br></code></pre></td></tr></table></figure>
+
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level1.jpg" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+
+<p>  这是第一关，直接URL参数提交注入，该注入能产生说明程序员没有过滤或用引号包裹任何参数内容，也就是说后台代码直接解析执行参数值。这就造成在弱类型的语言中，原本是正常的字符串被当作代码执行，形成该XSS漏洞。</p>
+</li>
+<li><p>第二种就是带<code>&lt;input&gt;</code>标签的GET型XSS，直接在表单输入窗口直接输入XSS代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">http:&#x2F;&#x2F;test.xss.tv&#x2F;level2.php?keyword&#x3D;&quot;&gt;&lt;script&gt;alert(&#x2F;xss&#x2F;)&lt;&#x2F;script&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  这里选择在URL处直接注入代码，带<code>&lt;input&gt;</code>标签的GET型XSS和普通的GET型XSS最大的区别就是普通的GET型XSS的参数可以直接被解析，而带<code>&lt;input&gt;</code>标签的GET型XSS还需要闭合原本的<code>input窗口</code>，然后才能注入ShellCode。闭合点举例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;form action&#x3D;level2.php method&#x3D;GET&gt;<br>	&lt;input name&#x3D;keyword  value&#x3D;&quot;test&quot;&gt;<br>	&lt;input type&#x3D;submit name&#x3D;submit value&#x3D;&quot;搜索&quot;&#x2F;&gt;<br>&lt;&#x2F;form&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  这里的keyword参数就是输入框的变量，我们输入的值会在替换value的值，也就是双引号里面的就是keyword变量代表的东西，所以我们闭合这个<code>&lt;input&gt;</code>标签用的是<code>&quot;&gt;</code>，后面就可以跟上ShellCode。放到界面输入框里就是</p>
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level2.jpg" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+
+<p>  这个输入框太小，里面的内容有一小部分没显示出来ԅ(¯ㅂ¯ԅ)。。。。。POST型同理，这里就不举例了。</p>
+</li>
+<li><p>第三种就是过滤一些特殊字符：</p>
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level3.jpg" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+
+<p>  上面就是通过源码看出的测试字符串，结果的源码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;form action&#x3D;level3.php method&#x3D;GET&gt;<br>	&lt;input name&#x3D;keyword  value&#x3D;&#39;&#39;&gt;&lt;script&gt;alert(&#x2F;xss&#x2F;)&lt;&#x2F;script&gt;&#39;&gt;<br>	&lt;input type&#x3D;submit name&#x3D;submit value&#x3D;搜索 &#x2F;&gt;<br>&lt;&#x2F;form&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  可以看出输入的<code>&quot;</code>、<code>&lt;</code>和<code>&gt;</code>都被过滤了，所以带有尖括号的ShellCode就不能用了。所以在此换思路采用事件属性：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php">http:<span class="hljs-comment">//test.xss.tv/level3.php?keyword=&#x27;+onclick=&#x27;javascript:Aalert(/xss/)&#x27;&amp;submit=submit</span><br></code></pre></td></tr></table></figure>
+
+<p>  同样的道理，先闭合前一个变量值，在放ShellCode，放到界面输入框就是</p>
+
+
+<p>  在这里就要注意下，因为上面用的是<code>onclick</code>点击事件，所以还要点击一下输入框才会有弹窗。</p>
+</li>
+<li><p>第四种就是过滤关键字：</p>
+<p>  一般测试的第一反应就是用最常见两中方式，发现特殊字符都被过滤了才会考虑用触发事件，但触发事件的关键字也被过滤了，这时候就要找有哪些还没有被过滤的。关键字测试：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">http:&#x2F;&#x2F;test.xss.tv&#x2F;level5.php?keyword&#x3D;&quot; ONclick&#x3D;&quot;javascript:alert(&#x2F;xss&#x2F;)<br></code></pre></td></tr></table></figure>
+
+<p>  源代码处可以看到得到的结果是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;form action&#x3D;level5.php method&#x3D;GET&gt;<br>	&lt;input name&#x3D;keyword  value&#x3D;&quot;&quot; o_nclick&#x3D;&quot;javascript:alert(&#x2F;xss&#x2F;)&quot;&gt;<br>	&lt;input type&#x3D;submit name&#x3D;submit value&#x3D;搜索 &#x2F;&gt;<br>&lt;&#x2F;form&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  很明显，<code>onclick</code>关键字中间被加了下划线，这种是用双关键字和大小写绕过不了的，那就换一种触发事件，这里可以先考虑超链接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">http:&#x2F;&#x2F;test.xss.tv&#x2F;level5.php?keyword&#x3D;&quot;&gt;&lt;a href&#x3D;&quot;javascript:alert(&#x2F;xss&#x2F;)&quot;&gt;点这里&lt;&#x2F;a&gt;&#x2F;&#x2F;<br></code></pre></td></tr></table></figure>
+
+<p>  看到的结果就是</p>
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level5.jpg" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+
+<p>  同样可以成功，后面加了个<code>//</code>的原因是为了注释掉后面多余的部分，以免影响代码的正确性。同样的道理，这一类型的常用利用方法有<code>onclick,onerror,</code>、<code>&lt;a&gt;标签、&lt;img&gt;标签、&lt;svg&gt;标签</code>、<code>双关键字、大小写</code>等不同的多种组合。</p>
+</li>
+<li><p>第五种就是HTML实体编码绕过</p>
+<p>  HTML实体编码指的就是用unicode编码来代替关键字符或关键符号，它有一个很大的特点，那就是<code>&amp;</code>、<code>#</code>、<code>;</code>不能被过滤。具体使用举个例子就一目了然：假设关键字<code>JavaScript</code>被过滤成<code>JavaScrip_t</code>，那就可以用<code>JavaScript</code>来代替<code>JavaScript</code>，这里的括号可以用两个反单引号代替。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">http:&#x2F;&#x2F;test.xss.tv&#x2F;level8.php?keyword&#x3D;javascript:alert(1)<br></code></pre></td></tr></table></figure>
+
+<p>  这里的关键字<code>javascript</code>被正则表达式加上了下划线：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs php">&lt;form action=level8.php method=GET&gt;<br>	&lt;input name=keyword  value=<span class="hljs-string">&quot;javascript:alert(1)&quot;</span>&gt;<br>	&lt;input type=submit name=submit value=添加友情链接 /&gt;<br>&lt;/form&gt;<br>&lt;center&gt;<br>	&lt;a href=<span class="hljs-string">&quot;javascr_ipt:alert(1)&quot;</span>&gt;友情链接&lt;/a&gt;<br>	&lt;img src=level8.jpg&gt;<br>&lt;/center&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  这个时候HTML实体编码就可以派上用场了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">http:&#x2F;&#x2F;test.xss.tv&#x2F;level8.php?keyword&#x3D;javascrip&amp;#x74;:alert(&#x2F;xss&#x2F;)&amp;submit&#x3D;%E6%B7%BB%E5%8A%A0%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5<br></code></pre></td></tr></table></figure>
+
+<p>  这里的submit参数后面的一串URL编码代表的是添加友情链接，界面执行就是</p>
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level8.jpg" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs php">&lt;form action=level8.php method=GET&gt;<br>	&lt;input name=keyword  value=<span class="hljs-string">&quot;javascrip&amp;amp;#x74;:alert(/xss/)&quot;</span>&gt;<br>	&lt;input type=submit name=submit value=添加友情链接 /&gt;<br>&lt;/form&gt;<br>&lt;center&gt;<br>    &lt;a href=<span class="hljs-string">&quot;javascrip&amp;#x74;:alert(/xss/)&quot;</span>&gt;友情链接&lt;/a&gt;<br>&lt;/center&gt;<br>&lt;center&gt;<br>    &lt;img src=level8.jpg&gt;<br>&lt;/center&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  同样的道理，这里需要点击那个友情链接。可以看出，源码不会出现问题，这里的<code>t</code>使用HTML实体编码照样能够被解析成功。这就是HTML实体编码的强大之处，HTML可以识别，执行文件的正则匹配不会成功，从而达到一个绕过的效果。</p>
+<p>  编码绕过的方式还有好多种，比如<code>十六进制编码</code>、<code>jsfuck编码</code>、<code>url编码</code>等，这里不做过多的举例。</p>
+</li>
+<li><p>第六种就是HTTP头流量包注入：</p>
+<p>  这种就是在隐藏HTTP流量存在CSS漏洞的时候就可以抓包修改，流通ShellCode：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;form id&#x3D;search&gt;<br>	&lt;input name&#x3D;&quot;t_link&quot;  value&#x3D;&quot;&quot; type&#x3D;&quot;hidden&quot;&gt;<br>	&lt;input name&#x3D;&quot;t_history&quot;  value&#x3D;&quot;&quot; type&#x3D;&quot;hidden&quot;&gt;<br>	&lt;input name&#x3D;&quot;t_sort&quot;  value&#x3D;&quot;&quot; type&#x3D;&quot;hidden&quot;&gt;<br>	&lt;input name&#x3D;&quot;t_ref&quot;  value&#x3D;&quot;http:&#x2F;&#x2F;test.xss.tv&#x2F;level10.php?keyword&#x3D;well%20done!&amp;t_sort&#x3D;%22type&#x3D;%22text%22%20onclick%20&#x3D;%20%22alert(1)&quot; type&#x3D;&quot;hidden&quot;&gt;<br>&lt;&#x2F;form&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  可以看出，第四个隐藏的<code>&lt;input&gt;</code>标签里面流通的是<code>t_ref</code>，可以猜测，这个流量包是经过<code>Referer</code>的，所以对其进行抓包，修改Referer参数</p>
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/level11_1.jpg" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+
+<p>  可以看到，这里多出来了一个部分，因为使用的是<code>onmouseover</code>事件，所以只要鼠标经过触碰到，就会触发通过。同样的道理，还可以修改<code>User-Agent</code>、<code>Cookie</code>等一系列HTTP头参数，具体情况具体使用。</p>
+</li>
+</ol>
+<p>  这里一直可以做到第十三关，第十四关好像崩了，进行不下去了。这样这次就做到这里了，以后找机会再往后进行吧，这一次消化的东西有点多了。如果记录的有什么不对，还请表哥表姐们点名批评，批评通道：</p>
+<img src="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/QQ.png" srcset="/img/loading.gif" lazyload class="" title="XSS攻击通关之路">
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>XSS攻击通关之路</div>
+      <div>http://example.com/2021/05/09/XSS攻击通关之路/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 9, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/09/linux%E4%B8%AD%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E5%88%9D%E6%AD%A5%E8%AE%A4%E8%AF%86/" title="linux中通配符的初步认识">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">linux中通配符的初步认识</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/%E7%BB%8F%E5%85%B8%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%B0%8F%E7%BB%93/" title="经典上传漏洞小结">
+                        <span class="hidden-mobile">经典上传漏洞小结</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

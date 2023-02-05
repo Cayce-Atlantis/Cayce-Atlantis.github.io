@@ -1,0 +1,655 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="经典上传漏洞小结 Posted on 2019-03-15 前言：  很久没回来跟新自己的博客了，这几天借着来郑州学习的时间，温习了一下几种常见的上传漏洞，也是时候给自己的博客增加点内容了，证明一下自己还活着～～～～～ 正文：  首先在这里表达一下自己对上传漏洞的理解：见名思义，在某个能够上传文件的地方（下面就叫它为up点）上传一些恶意的木马，在hacker或受害者的触发下对受害服务器产生恶意干扰">
+<meta property="og:type" content="article">
+<meta property="og:title" content="经典上传漏洞小结">
+<meta property="og:url" content="http://example.com/2021/05/09/%E7%BB%8F%E5%85%B8%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%B0%8F%E7%BB%93/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="经典上传漏洞小结 Posted on 2019-03-15 前言：  很久没回来跟新自己的博客了，这几天借着来郑州学习的时间，温习了一下几种常见的上传漏洞，也是时候给自己的博客增加点内容了，证明一下自己还活着～～～～～ 正文：  首先在这里表达一下自己对上传漏洞的理解：见名思义，在某个能够上传文件的地方（下面就叫它为up点）上传一些恶意的木马，在hacker或受害者的触发下对受害服务器产生恶意干扰">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-05-09T06:06:36.000Z">
+<meta property="article:modified_time" content="2021-05-09T08:17:19.974Z">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>经典上传漏洞小结 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="经典上传漏洞小结"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2021-05-09 14:06" pubdate>
+          May 9, 2021 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          73 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">经典上传漏洞小结</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="经典上传漏洞小结"><a href="#经典上传漏洞小结" class="headerlink" title="经典上传漏洞小结"></a>经典上传漏洞小结</h1><p> Posted on 2019-03-15</p>
+<h3 id="前言："><a href="#前言：" class="headerlink" title="前言："></a>前言：</h3><p>  很久没回来跟新自己的博客了，这几天借着来郑州学习的时间，温习了一下几种常见的上传漏洞，也是时候给自己的博客增加点内容了，证明一下自己还活着～～～～～</p>
+<h3 id="正文："><a href="#正文：" class="headerlink" title="正文："></a>正文：</h3><p>  首先在这里表达一下自己对上传漏洞的理解：见名思义，在某个能够上传文件的地方（下面就叫它为up点）上传一些恶意的木马，在hacker或受害者的触发下对受害服务器产生恶意干扰。最典型的就是hacker选择绕过WAF将一句话木马导入up点，获取进入被攻击服务器的后台，利用菜刀工具进入该服务器获取后台文件。</p>
+<p>  一句话木马：<?php @eval($_POST[‘password’]);?>，该木马一般被hacker用作连接服务器后台的PHP文件内容，配合菜刀工具可以轻松进入服务器后台，所谓传小马，连webshell指的就是它。木马的<code>password</code>是个可选变量，是菜刀连接该木马的密码。</p>
+<p>  一些常见的上传漏洞类型：</p>
+<ol>
+<li><h5 id="前端检测漏洞："><a href="#前端检测漏洞：" class="headerlink" title="前端检测漏洞："></a>前端检测漏洞：</h5><p>  主要指那些在前端代码部分使用特定方法过滤的类型，例如直接在html代码中使用<code>&lt;script&gt;&lt;/script&gt;</code>直接限制关键字，这里的关键字主要是文件后缀<code>.jpg、.png、.gif</code>等常见的无法解析内部恶意代码的文件。造成该漏洞的主要原因是程序员再编写代码的时候只是前端代码中限制可上传文件的后缀，换句话说只是在客户端浏览器上检测，这就造成了只要流量包通过客户端浏览器的检测，就会畅通无阻地上传到up点。代码举例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;script type&#x3D;&quot;text&#x2F;javascript&quot;&gt;<br>	function checkFile() &#123;<br>    var file &#x3D; document.getElementsByName(&#39;upload_file&#39;)[0].value;<br>    if (file &#x3D;&#x3D; null || file &#x3D;&#x3D; &quot;&quot;) &#123;<br>        alert(&quot;请选择要上传的文件!&quot;);<br>        return false;<br>    &#125;<br>    &#x2F;&#x2F;定义允许上传的文件类型<br>    var allow_ext &#x3D; &quot;.jpg|.png|.gif&quot;;<br>    &#x2F;&#x2F;提取上传文件的类型<br>    var ext_name &#x3D; file.substring(file.lastIndexOf(&quot;.&quot;));<br>    &#x2F;&#x2F;判断上传文件类型是否允许上传<br>    if (allow_ext.indexOf(ext_name + &quot;|&quot;) &#x3D;&#x3D; -1) &#123;<br>        var errMsg &#x3D; &quot;该文件不允许上传，请上传&quot; + allow_ext + &quot;类型的文件,当前文件类型为：&quot; + ext_name;<br>        alert(errMsg);<br>        return false;<br>    &#125;<br>&#125;<br>&lt;&#x2F;script&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  该代码里面有个明显的参数allow_ext，不难看出是用来记录可上传文件类型的后缀，并且使用<code>&lt;script&gt;</code>标签修饰。hacker就可以通过一些插件（比如火狐的firebug）对此类参数进行修改，添加一些可执行文件的后缀即可上传恶意文件，从而获取webshell。当然，有些hacker可能会通过抓包工具（比如BurpSute）抓取前端检测可通过的文件但含有恶意代码的文件，修改文件后缀后放包。</p>
+</li>
+<li><h5 id="服务端MIME类型漏洞："><a href="#服务端MIME类型漏洞：" class="headerlink" title="服务端MIME类型漏洞："></a>服务端MIME类型漏洞：</h5><p>  MIME简单说就是客户端上区分不同类型数据的软件，例如WEB浏览器判断文件类型时就是通过MIME类型来确定是jpg图片还是PostScript文件。一般图片的类型就是<code>imge/具体图片类型</code>（比如jpg图片的MIME类型就是<code>imge/jpeg</code>），这些类型会被记录在HTTP包的Conent-Type里面，然后上传到服务端PHP的$_FILES超全局变量里面。造成该漏洞的原因是服务端辨别文件的一种方式就是通过检测流通文件的MIME类型，程序员在开发网站的时候考虑到在客户端判断绕过类型容易被抓漏洞，所以选择在服务端使用从客户端传来的辨别文件的MIME类型来过滤文件。代码举例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;?php<br>$is_upload &#x3D; false;<br>$msg &#x3D; null;<br>if (isset($_POST[&#39;submit&#39;])) &#123;<br>    if (file_exists($UPLOAD_ADDR)) &#123;<br>        if (($_FILES[&#39;upload_file&#39;][&#39;type&#39;] &#x3D;&#x3D; &#39;image&#x2F;jpeg&#39;) || ($_FILES[&#39;upload_file&#39;][&#39;type&#39;] &#x3D;&#x3D; &#39;image&#x2F;png&#39;) || ($_FILES[&#39;upload_file&#39;][&#39;type&#39;] &#x3D;&#x3D; &#39;image&#x2F;gif&#39;)) &#123;<br>            if (move_uploaded_file($_FILES[&#39;upload_file&#39;][&#39;tmp_name&#39;], $UPLOAD_ADDR . &#39;&#x2F;&#39; . $_FILES[&#39;upload_file&#39;][&#39;name&#39;])) &#123;<br>                $img_path &#x3D; $UPLOAD_ADDR . $_FILES[&#39;upload_file&#39;][&#39;name&#39;];<br>                $is_upload &#x3D; true;<br>            &#125;<br>        &#125; else &#123;<br>            $msg &#x3D; &#39;文件类型不正确，请重新上传！&#39;;<br>        &#125;<br>    &#125; else &#123;<br>        $msg &#x3D; $UPLOAD_ADDR.&#39;文件夹不存在,请手工创建！&#39;;<br>    &#125;<br>&#125;<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  在该代码中可以看出服务端利用客户端传来MIME类型值来确定文件类型，这种辨别方式存在一个明显的漏洞，就是服务端只是简单通过客户端给文件记录的标记（也就是上面说的MIME类型）来判断文件类型，这种标识符是可以被更改的。hacker一般会通过抓取客户端的流量包并修改文件的MIME类型，使之可以通过服务端的检测，就可以上传恶意木马。</p>
+</li>
+<li><h5 id="文件扩展名绕过漏洞："><a href="#文件扩展名绕过漏洞：" class="headerlink" title="文件扩展名绕过漏洞："></a>文件扩展名绕过漏洞：</h5><p>  这里的文件扩展名具体指的是服务端可解析的php文件多样，简单说来就是服务器可以解析的站点文件不只有<code>php</code>，还有<code>php2，php3，php4，php5</code>，带着些后缀的站点文件效果与php文件不相上下。造成这个漏洞的主要原因是程序员在开发的时候只是简单过滤了一些常见文件的后缀，而没有考虑到php文件的扩展名问题。代码举例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-variable">$is_upload</span> = <span class="hljs-literal">false</span>;<br><span class="hljs-variable">$msg</span> = <span class="hljs-literal">null</span>;<br><span class="hljs-keyword">if</span> (<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;submit&#x27;</span>])) &#123;<br>    <span class="hljs-keyword">if</span> (file_exists(<span class="hljs-variable">$UPLOAD_ADDR</span>)) &#123;<br>        <span class="hljs-variable">$deny_ext</span> = <span class="hljs-keyword">array</span>(<span class="hljs-string">&#x27;.asp&#x27;</span>,<span class="hljs-string">&#x27;.aspx&#x27;</span>,<span class="hljs-string">&#x27;.php&#x27;</span>,<span class="hljs-string">&#x27;.jsp&#x27;</span>);<br>        <span class="hljs-variable">$file_name</span> = trim(<span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&#x27;upload_file&#x27;</span>][<span class="hljs-string">&#x27;name&#x27;</span>]);<br>        <span class="hljs-variable">$file_name</span> = deldot(<span class="hljs-variable">$file_name</span>);<span class="hljs-comment">//删除文件名末尾的点</span><br>        <span class="hljs-variable">$file_ext</span> = strrchr(<span class="hljs-variable">$file_name</span>, <span class="hljs-string">&#x27;.&#x27;</span>);<br>        <span class="hljs-variable">$file_ext</span> = strtolower(<span class="hljs-variable">$file_ext</span>); <span class="hljs-comment">//转换为小写</span><br>        <span class="hljs-variable">$file_ext</span> = str_ireplace(<span class="hljs-string">&#x27;::$DATA&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>, <span class="hljs-variable">$file_ext</span>);<span class="hljs-comment">//去除字符串::$DATA</span><br>        <span class="hljs-variable">$file_ext</span> = trim(<span class="hljs-variable">$file_ext</span>); <span class="hljs-comment">//收尾去空</span><br><br>        <span class="hljs-keyword">if</span>(!in_array(<span class="hljs-variable">$file_ext</span>, <span class="hljs-variable">$deny_ext</span>)) &#123;<br>            <span class="hljs-keyword">if</span> (move_uploaded_file(<span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&#x27;upload_file&#x27;</span>][<span class="hljs-string">&#x27;tmp_name&#x27;</span>], <span class="hljs-variable">$UPLOAD_ADDR</span>. <span class="hljs-string">&#x27;/&#x27;</span> . <span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&#x27;upload_file&#x27;</span>][<span class="hljs-string">&#x27;name&#x27;</span>])) &#123;<br>                 <span class="hljs-variable">$img_path</span> = <span class="hljs-variable">$UPLOAD_ADDR</span> .<span class="hljs-string">&#x27;/&#x27;</span>. <span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&#x27;upload_file&#x27;</span>][<span class="hljs-string">&#x27;name&#x27;</span>];<br>                 <span class="hljs-variable">$is_upload</span> = <span class="hljs-literal">true</span>;<br>            &#125;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-variable">$msg</span> = <span class="hljs-string">&#x27;不允许上传.asp,.aspx,.php,.jsp后缀文件！&#x27;</span>;<br>        &#125;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-variable">$msg</span> = <span class="hljs-variable">$UPLOAD_ADDR</span> . <span class="hljs-string">&#x27;文件夹不存在,请手工创建！&#x27;</span>;<br>    &#125;<br>&#125;<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>  从代码中可以看出，被限制的文件扩展名只有<code>&#39;.asp&#39;,&#39;.aspx&#39;,&#39;.php&#39;,&#39;.jsp&#39;</code>，所以，客户端在上传<code>php2，php3，php4，php5</code>等文件的时候是被允许的（这里的一些可绕过关键字太多，就一一举例），这就造成了一些恶意代码可被上传的可能，只要不触碰被禁止的扩展名，使用一些常见的方式（大小写，文件流，不被禁止的可解析文件等等）都可以上传恶意代码到up点，当然，一些hacker喜欢利用抓包工具看流量包更改后缀。</p>
+</li>
+<li><h5 id="文件内容检测上传漏洞："><a href="#文件内容检测上传漏洞：" class="headerlink" title="文件内容检测上传漏洞："></a>文件内容检测上传漏洞：</h5><p>  文件内容检测已经可以说是一种比较安全的检测方式，简单说，文件内容检测就是通过对上传文件解析后的2进制或16进制代码进行检测其内容是否合法或者是否存在恶意代码。例如png图片的开头一定是<code>89 50 4E 47 0d 0a 1a 0a</code>。但这种检测还会存在漏洞的原因就是这种判断方式太严格，只要能够满足站点文件的要求，就可能被某个可上传文件欺骗过去。代码举例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getReailFileType</span>(<span class="hljs-params"><span class="hljs-variable">$filename</span></span>)</span>&#123;<br>    <span class="hljs-variable">$file</span> = fopen(<span class="hljs-variable">$filename</span>, <span class="hljs-string">&quot;rb&quot;</span>);<br>    <span class="hljs-variable">$bin</span> = fread(<span class="hljs-variable">$file</span>, <span class="hljs-number">2</span>); <span class="hljs-comment">//只读2字节</span><br>    fclose(<span class="hljs-variable">$file</span>);<br>    <span class="hljs-variable">$strInfo</span> = @unpack(<span class="hljs-string">&quot;C2chars&quot;</span>, <span class="hljs-variable">$bin</span>);    <br>    <span class="hljs-variable">$typeCode</span> = intval(<span class="hljs-variable">$strInfo</span>[<span class="hljs-string">&#x27;chars1&#x27;</span>].<span class="hljs-variable">$strInfo</span>[<span class="hljs-string">&#x27;chars2&#x27;</span>]);    <br>    <span class="hljs-variable">$fileType</span> = <span class="hljs-string">&#x27;&#x27;</span>;    <br>    <span class="hljs-keyword">switch</span>(<span class="hljs-variable">$typeCode</span>)&#123;      <br>        <span class="hljs-keyword">case</span> <span class="hljs-number">255216</span>:            <br>            <span class="hljs-variable">$fileType</span> = <span class="hljs-string">&#x27;jpg&#x27;</span>;<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> <span class="hljs-number">13780</span>:            <br>            <span class="hljs-variable">$fileType</span> = <span class="hljs-string">&#x27;png&#x27;</span>;<br>            <span class="hljs-keyword">break</span>;        <br>        <span class="hljs-keyword">case</span> <span class="hljs-number">7173</span>:            <br>            <span class="hljs-variable">$fileType</span> = <span class="hljs-string">&#x27;gif&#x27;</span>;<br>            <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">default</span>:            <br>            <span class="hljs-variable">$fileType</span> = <span class="hljs-string">&#x27;unknown&#x27;</span>;<br>        &#125;    <br>        <span class="hljs-keyword">return</span> <span class="hljs-variable">$fileType</span>;<br>&#125;<br><br><span class="hljs-variable">$is_upload</span> = <span class="hljs-literal">false</span>;<br><span class="hljs-variable">$msg</span> = <span class="hljs-literal">null</span>;<br><span class="hljs-keyword">if</span>(<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;submit&#x27;</span>]))&#123;<br>    <span class="hljs-variable">$temp_file</span> = <span class="hljs-variable">$_FILES</span>[<span class="hljs-string">&#x27;upload_file&#x27;</span>][<span class="hljs-string">&#x27;tmp_name&#x27;</span>];<br>    <span class="hljs-variable">$file_type</span> = getReailFileType(<span class="hljs-variable">$temp_file</span>);<br><br>    <span class="hljs-keyword">if</span>(<span class="hljs-variable">$file_type</span> == <span class="hljs-string">&#x27;unknown&#x27;</span>)&#123;<br>        <span class="hljs-variable">$msg</span> = <span class="hljs-string">&quot;文件未知，上传失败！&quot;</span>;<br>    &#125;<span class="hljs-keyword">else</span>&#123;<br>        <span class="hljs-variable">$img_path</span> = <span class="hljs-variable">$UPLOAD_ADDR</span>.<span class="hljs-string">&quot;/&quot;</span>.rand(<span class="hljs-number">10</span>, <span class="hljs-number">99</span>).date(<span class="hljs-string">&quot;YmdHis&quot;</span>).<span class="hljs-string">&quot;.&quot;</span>.<span class="hljs-variable">$file_type</span>;<br>        <span class="hljs-keyword">if</span>(move_uploaded_file(<span class="hljs-variable">$temp_file</span>,<span class="hljs-variable">$img_path</span>))&#123;<br>            <span class="hljs-variable">$is_upload</span> = <span class="hljs-literal">true</span>;<br>        &#125;<br>        <span class="hljs-keyword">else</span>&#123;<br>            <span class="hljs-variable">$msg</span> = <span class="hljs-string">&quot;上传失败&quot;</span>;<br>        &#125;<br>    &#125;<br>&#125;<br><span class="hljs-meta">?&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>  可以看出，文件在上传之后只被允许读入2字节，然后判断是否为被允许文件的前缀，而被允许的文件还会重新组成文件名后才会被读入。虽然说这样的检测确实繁琐点，当确实有一定的可靠性。但道高一尺，魔高一丈啊，hacker利用抓包工具将流量包截取下来，并且在文件末尾加上恶意木马，修改扩展名后放包，绕过随机函数的这一块大部分会采用匹配up点的文件名的脚本来确定自己上传上去的文件被修改成是什么名，这类脚本只要懂一些http流量截取的人基本上都会写出，这里就不放出了。这样就可以通过菜刀工具进入up点了。</p>
+</li>
+<li><h5 id="00截断目录绕过漏洞："><a href="#00截断目录绕过漏洞：" class="headerlink" title="%00截断目录绕过漏洞："></a>%00截断目录绕过漏洞：</h5><p>  谈到这个漏洞，我就想起当初在学习的时候遇到的坎坷，那时候我还不会这个类型的绕过，所以对这个绕过还是一直都是懵懵懂懂的状态，一直到前几天在做一道CTF时，突然感觉自己就悟了。我的感官中，这个漏洞已经超出那些只懂得编辑代码的程序员的能力范围。这个漏洞利用URL编码%00或者16进制下的0x00直接将后面的累赘代码省略掉，就就像c语言中在一段字符串中间加了一个不被转义的<code>\0</code>一样，提前结束了该字符串，这里也是同样的道理，程序在读URL代码中变量的时候，%00触发了<code>char(0)</code>这个字符，程序就会误判到了结束符，提前结束读取变量，这样就保留下了截断符前面的部分。代码举例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs php+HTML">&lt;?php<br>$is_upload &#x3D; false;<br>$msg &#x3D; null;<br>if (isset($_POST[&#39;submit&#39;])) &#123;<br>    if (file_exists($UPLOAD_ADDR)) &#123;<br>        $deny_ext &#x3D; array(&quot;.php&quot;,&quot;.php5&quot;,&quot;.php4&quot;,&quot;.php3&quot;,&quot;.php2&quot;,&quot;.html&quot;,&quot;.htm&quot;,&quot;.phtml&quot;,&quot;.pHp&quot;,&quot;.pHp5&quot;,&quot;.pHp4&quot;,&quot;.pHp3&quot;,&quot;.pHp2&quot;,&quot;.Html&quot;,&quot;.Htm&quot;,&quot;.pHtml&quot;,&quot;.jsp&quot;,&quot;.jspa&quot;,&quot;.jspx&quot;,&quot;.jsw&quot;,&quot;.jsv&quot;,&quot;.jspf&quot;,&quot;.jtml&quot;,&quot;.jSp&quot;,&quot;.jSpx&quot;,&quot;.jSpa&quot;,&quot;.jSw&quot;,&quot;.jSv&quot;,&quot;.jSpf&quot;,&quot;.jHtml&quot;,&quot;.asp&quot;,&quot;.aspx&quot;,&quot;.asa&quot;,&quot;.asax&quot;,&quot;.ascx&quot;,&quot;.ashx&quot;,&quot;.asmx&quot;,&quot;.cer&quot;,&quot;.aSp&quot;,&quot;.aSpx&quot;,&quot;.aSa&quot;,&quot;.aSax&quot;,&quot;.aScx&quot;,&quot;.aShx&quot;,&quot;.aSmx&quot;,&quot;.cEr&quot;,&quot;.sWf&quot;,&quot;.swf&quot;,&quot;.htaccess&quot;);<br>        $file_name &#x3D; trim($_FILES[&#39;upload_file&#39;][&#39;name&#39;]);<br>        $file_ext &#x3D; strrchr($file_name, &#39;.&#39;);<br>        $file_ext &#x3D; strtolower($file_ext); &#x2F;&#x2F;转换为小写<br>        $file_ext &#x3D; str_ireplace(&#39;::$DATA&#39;, &#39;&#39;, $file_ext);&#x2F;&#x2F;去除字符串::$DATA<br>        $file_ext &#x3D; trim($file_ext); &#x2F;&#x2F;首尾去空<br>        <br>        if (!in_array($file_ext, $deny_ext)) &#123;<br>            if (move_uploaded_file($_FILES[&#39;upload_file&#39;][&#39;tmp_name&#39;], $UPLOAD_ADDR . &#39;&#x2F;&#39; . $_FILES[&#39;upload_file&#39;][&#39;name&#39;])) &#123;<br>                $img_path &#x3D; $UPLOAD_ADDR . &#39;&#x2F;&#39; . $file_name;<br>                $is_upload &#x3D; true;<br>            &#125;<br>        &#125; else &#123;<br>            $msg &#x3D; &#39;此文件不允许上传&#39;;<br>        &#125;<br>    &#125; else &#123;<br>        $msg &#x3D; $UPLOAD_ADDR . &#39;文件夹不存在,请手工创建！&#39;;<br>    &#125;<br>&#125;<br>?&gt;<br></code></pre></td></tr></table></figure>
+
+<p>  因为这个漏洞利用是服务端解析文件时截断目录的漏洞，所以这里我就贴了一个禁止所有可执行文件上传的代码。这里有必要解释一下客户端读取文件类型和服务端读取文件类型的方式了，就是它们都看后缀名，也就是看<code>.</code>后面的东西，一般都是直接看最后一个<code>.</code>后面的东西就是后缀名。hacker就是也是利用这一点，上传一个被允许的文件，然后抓包截断，在上传路径后面添加一个含有两个文件后缀的字符串，中间用一个符号隔开，在burp的hex栏中修改这个符号的值为00，然后放包上传，最后到服务端就会被存储为可执行文件，以达到获取网站webshell的目的。</p>
+</li>
+<li><h5 id="目录路径检测解析漏洞："><a href="#目录路径检测解析漏洞：" class="headerlink" title="目录路径检测解析漏洞："></a>目录路径检测解析漏洞：</h5><p>  目录路径解析是基于IIS6.0服务器管理软件的功能，是指上传上去文件路径在一定程度上可以被修改，说通俗点就是可以在站点文件下在建一个文件（一般这个文件是可执行文件）。这个漏洞是利用IIS6.0太过于遵守正常思维下文件目录格式，是文件夹就是文件夹，是可执行文件就是可执行文件。</p>
+<p>  因为这是服务器管理软件的漏洞，所以这里有没有代码就没必要了。hacker一般都是直接抓取流量包，在上传路径下加一个可执行文件的名字（比如，在burp抓到的包中原路径是<code>upload</code>，然后改成<code>upload/test.php</code>），再在已经通过本地验证过的文件里加上恶意代码。因为计算机之间流通的是计算机语言，IIS6.0将原本hacker上传文件读入到新生成的可执行文件下，就是一串代码，这样hacker的恶意代码就会被执行。</p>
+<p>  这里再说一个IIS6.0的文件解析漏洞：主要是用到<code>;</code>，IIS6.0在解析一个文件名的时候会将<code>;</code>当成截断符，而不解析分号后面的内容。hacker利用该漏洞的思想有点类似%00截断，只是利用方法稍微会简单点，也就是抓包后在上传路径下加一个可执行文件的名字并用分号结束（比如，在burp抓到的包中原路径是<code>upload</code>，然后改成<code>upload/test.php;</code>），再在已经通过本地验证过的文件里加上恶意代码。</p>
+</li>
+</ol>
+<p>  目前我知道的经典上传漏洞大致分为上面这几大类，这些应该只是冰山一角，还有更多的上传漏洞以后遇到了就补上来。如果有什么记录错或者记录的不完整的地方，还请大佬们点名批评，批评通道：1394850274</p>
+<p>参考文献：upload-labs，杰奇网站漏洞。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>经典上传漏洞小结</div>
+      <div>http://example.com/2021/05/09/经典上传漏洞小结/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 9, 2021</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/" title="XSS攻击通关之路">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">XSS攻击通关之路</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/05/09/PHP%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%B0%8F%E7%BB%93/" title="PHP正则表达式小结">
+                        <span class="hidden-mobile">PHP正则表达式小结</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

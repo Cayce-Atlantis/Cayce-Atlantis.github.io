@@ -1,0 +1,611 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta property="og:type" content="website">
+<meta property="og:title" content="Atlantis">
+<meta property="og:url" content="http://example.com/page/2/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="Cayce">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 100vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Having ink in stomach to Cayce"></span>
+          
+        </div>
+
+        
+      </div>
+
+      
+        <div class="scroll-down-bar">
+          <i class="iconfont icon-arrowdown"></i>
+        </div>
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      <div class="container nopadding-x-md">
+        <div id="board"
+          style="margin-top: 0">
+          
+          <div class="container">
+            <div class="row">
+              <div class="col-12 col-md-10 m-auto">
+                
+
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/" target="_self">
+          php反序列化使用不当造成的漏洞
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/php%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%BD%93%E9%80%A0%E6%88%90%E7%9A%84%E6%BC%8F%E6%B4%9E/" target="_self">
+        <div>
+          前言：  这几天进入了一个疯狂的划水期，作为一个十成十的菜鸟，跟着学长们见识一下CTF的乐趣所在，还真别说，真香。。。。原本是决定借这一次提高一下自己，结果被虐得体无完肤，特别是WEB方面，反序列化这一块就让我很难受，所以准备写这一篇博客纪念一下自己的菜。。。。。 参考文献：Amber小姐姐的讲解视频 正文：  献上一波自己对序列化和反序列化的理解：php中，序列化就是将一个类的对象转换成一个有一
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 14:07" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/%E5%AF%B9zip%E5%8E%8B%E7%BC%A9%E5%8C%85%E9%80%9A%E7%94%A8%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AE%A4%E8%AF%86/" target="_self">
+          对zip压缩包通用格式的认识
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/%E5%AF%B9zip%E5%8E%8B%E7%BC%A9%E5%8C%85%E9%80%9A%E7%94%A8%E6%A0%BC%E5%BC%8F%E7%9A%84%E8%AE%A4%E8%AF%86/" target="_self">
+        <div>
+          前言：  这几天周围的伙伴都在讨论关于zip压缩包的十六进制格式的一些认识，乘着记忆还算热乎，赶紧记录下来，也算是对这方面的一个小归纳。 参考文献： https://www.cnblogs.com/esingchan/p/3958962.html https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE-6.2.0.txt https://xz.ali
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 14:07" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/linux%E4%B8%AD%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E5%88%9D%E6%AD%A5%E8%AE%A4%E8%AF%86/" target="_self">
+          linux中通配符的初步认识
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/linux%E4%B8%AD%E9%80%9A%E9%85%8D%E7%AC%A6%E7%9A%84%E5%88%9D%E6%AD%A5%E8%AE%A4%E8%AF%86/" target="_self">
+        <div>
+          前言：  之前学过php下的正则表达式，有一点突发的感觉，这几天在做题的时候发现Linux也有类似的用法，不同的是在Linux中是用在命令执行方面的，关于命令执行，等学的差不多了，过段时间就记录一下。今天主要是记录Linux的命令通配符以及经常与通配符连用的特殊字符。 正文：  这里还得废话一波，省的以后忘记。Linux的通配符指的就是shell的内置功能，指可以代替Linux命令的特殊字符的总称
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 14:07" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/" target="_self">
+          XSS攻击通关之路
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/" target="_self">
+        <div>
+          XSS攻击通关之路前言：  之前去郑州学习的时候看了一套比较系统的XSS注入的视频，简直是要膜拜做这个视频的人，以前会的XSS注入测试跟着一比简直是关公门前耍大刀，不仅刷新了以前对这个注入的理解，还涨了不少姿势。看来以后这种学习大会一定要多去去见识见识，没有什么比这提升更快了我觉得。。。。。。 正文：  刚开始还是先在这里记录一下XSS注入的意义和危害吧：   XSS攻击又叫跨站脚本攻击，它是一种
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 14:07" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/%E7%BB%8F%E5%85%B8%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%B0%8F%E7%BB%93/" target="_self">
+          经典上传漏洞小结
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/%E7%BB%8F%E5%85%B8%E4%B8%8A%E4%BC%A0%E6%BC%8F%E6%B4%9E%E5%B0%8F%E7%BB%93/" target="_self">
+        <div>
+          经典上传漏洞小结 Posted on 2019-03-15 前言：  很久没回来跟新自己的博客了，这几天借着来郑州学习的时间，温习了一下几种常见的上传漏洞，也是时候给自己的博客增加点内容了，证明一下自己还活着～～～～～ 正文：  首先在这里表达一下自己对上传漏洞的理解：见名思义，在某个能够上传文件的地方（下面就叫它为up点）上传一些恶意的木马，在hacker或受害者的触发下对受害服务器产生恶意干扰
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 14:06" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/PHP%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%B0%8F%E7%BB%93/" target="_self">
+          PHP正则表达式小结
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/PHP%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%B0%8F%E7%BB%93/" target="_self">
+        <div>
+          PHP正则表达式小结感悟：  为了锻炼我们自己的编码能力，这个寒假准备利用php+html+css+mysql开发一个本地web小网站。在学习的过程中，我重新认识了一遍正则表达式，借用这个机会，将这次的认识记录起来，以免过段时间忘了一些细节。相对以前而言，我觉得这次对正则表达式的认识也有个十之七八了。  正文：  简单的介绍一下谈诉我对正则表达式概念的理解，简单的说正则表达式有点像在描述一个或一类
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 13:59" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/SQLi-LABS-LESS-1-28a%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF%E5%B0%8F%E7%BB%93/" target="_self">
+          SQLi-LABS LESS-1~28a绕过姿势小结
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/SQLi-LABS-LESS-1-28a%E7%BB%95%E8%BF%87%E5%A7%BF%E5%8A%BF%E5%B0%8F%E7%BB%93/" target="_self">
+        <div>
+          SQLi-LABS LESS-1~28a绕过姿势小结感悟：  上一篇对28a及之前的关卡做理论小结的时候就想好再写一篇绕过方式小结，这也是为了方便以后忘记的时候能想起来（虽然不一定写的完整），如果有什么错误，还请各位大表哥大表姐能指条明路。上一次小结中只是单纯的介绍了一下注入漏洞的分类和利用方法，但是不是和具体，这个会在这章补充，而且不写漏洞的危害主要是因为SQL注入是WEB漏洞中能排进前三的漏洞
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 13:51" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h1 class="index-header">
+        
+        <a href="/2021/05/09/SQLI-LABS%E6%B3%A8%E5%85%A5%E5%B0%8F%E7%BB%93%EF%BC%88Less-1%EF%BD%9ELess-28a%EF%BC%89/" target="_self">
+          SQLI-LABS注入小结（Less-1～Less-28a）
+        </a>
+      </h1>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2021/05/09/SQLI-LABS%E6%B3%A8%E5%85%A5%E5%B0%8F%E7%BB%93%EF%BC%88Less-1%EF%BD%9ELess-28a%EF%BC%89/" target="_self">
+        <div>
+          SQLI-LABS注入小结感悟：  这算是我第一次在这么大平台上发表博文，想想还是有点小激动的。说实在，搭建这个博客时我都没想好要在这上面发表什么，想了想还是记录一下自己学过还有即将要学的一些知识点吧，以免时间长了，啥也都忘了。这篇写sqli-labs主要也是在这里学到的东西太多，不给点分类的话，总是搞不清啥是啥！！！！！相对于一些捷径来说（像sqlmap这一类的工具直接爆破），我还是喜欢手工实验
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2021-05-09 13:36" pubdate>
+              2021-05-09
+            </time>
+          </div>
+        
+        
+        
+      </div>
+    </article>
+  </div>
+
+
+
+  <nav aria-label="navigation">
+    <span class="pagination" id="pagination">
+      <a class="extend prev" rel="prev" href="/"><i class="iconfont icon-arrowleft"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    </span>
+  </nav>
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
