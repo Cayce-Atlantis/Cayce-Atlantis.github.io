@@ -95,7 +95,9 @@
     
     <tags>
       
-      <tag>struts2,payload</tag>
+      <tag>struts2</tag>
+      
+      <tag>payload</tag>
       
     </tags>
     
@@ -264,7 +266,9 @@
     
     <tags>
       
-      <tag>csrf,ssrf</tag>
+      <tag>csrf</tag>
+      
+      <tag>ssrf</tag>
       
     </tags>
     
@@ -439,7 +443,9 @@
     
     <tags>
       
-      <tag>SQL Injection,sqli</tag>
+      <tag>SQL Injection</tag>
+      
+      <tag>sqli</tag>
       
     </tags>
     
@@ -464,7 +470,9 @@
     
     <tags>
       
-      <tag>SQL Injection,sqli</tag>
+      <tag>SQL Injection</tag>
+      
+      <tag>sqli</tag>
       
     </tags>
     
