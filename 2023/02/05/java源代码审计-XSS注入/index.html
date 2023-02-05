@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Cayce">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="XSS漏洞基础 概述 XSS被称为跨站脚本攻击（Cross Site Scripting），由于和层叠样式表（Cascading Style Sheets，CSS）重名，改为XSS。  主要基于JavaScript语言进行恶意攻击，因为js非常灵活操作html、css、浏览器。  1）定义&#x2F;原理：跨站脚本（Cross-Site Scripting），本应该缩写为CSS，但是该缩写已被层叠样式脚本C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java源代码审计-XSS注入">
+<meta property="og:url" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:site_name" content="Atlantis">
+<meta property="og:description" content="XSS漏洞基础 概述 XSS被称为跨站脚本攻击（Cross Site Scripting），由于和层叠样式表（Cascading Style Sheets，CSS）重名，改为XSS。  主要基于JavaScript语言进行恶意攻击，因为js非常灵活操作html、css、浏览器。  1）定义&#x2F;原理：跨站脚本（Cross-Site Scripting），本应该缩写为CSS，但是该缩写已被层叠样式脚本C">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
+<meta property="og:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
+<meta property="article:published_time" content="2023-02-05T07:42:05.000Z">
+<meta property="article:modified_time" content="2023-02-05T08:17:38.431Z">
+<meta property="article:author" content="Cayce">
+<meta property="article:tag" content="xss">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
+  
+  
+  
+  <title>java源代码审计-XSS注入 - Atlantis</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Cayce&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>Home</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>Archives</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>Categories</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>Tags</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>About</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="java源代码审计-XSS注入"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-02-05 15:42" pubdate>
+          February 5, 2023 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          13k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          108 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">java源代码审计-XSS注入</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="XSS漏洞基础"><a href="#XSS漏洞基础" class="headerlink" title="XSS漏洞基础"></a>XSS漏洞基础</h3><ol>
+<li><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p> XSS被称为跨站脚本攻击（Cross Site Scripting），由于和层叠样式表（Cascading Style Sheets，CSS）重名，改为XSS。</p>
+<p> 主要基于JavaScript语言进行恶意攻击，因为js非常灵活操作html、css、浏览器。</p>
+<p> 1）<strong>定义/原理</strong>：跨站脚本（Cross-Site Scripting），本应该缩写为CSS，但是该缩写已被层叠样式脚本Cascading Style Sheets所用，所以改简称为XSS。也称跨站脚本或跨站脚本攻击。跨站脚本攻击XSS通过将恶意得Script代码注入到Web页面中，当用户浏览该页之时，嵌入其中Web里面的Script代码会被执行，从而达到恶意攻击用户的目的。</p>
+<p> 2）<strong>本质</strong>：是一种针对网站应用程序的安全漏洞攻击技术，是代码注入的一种 。</p>
+<p> 3）<strong>特点</strong>：XSS主要基于<strong>JavaScript</strong>完成恶意的攻击行为，由于JS可以非常灵活地操作html、css和浏览器，使得跨站脚本攻击的“想象”空间特别大。</p>
+<p> 4）<strong>攻击对象</strong>：被攻击者的浏览器。用户最简单的动作就是使用浏览器上网，并且浏览器中有javascript解释器，可以解析javascript，然后浏览器不会判断代码是否恶意，也就是说xss的对象是用户的浏览器。</p>
+<p> 微博、留言板、聊天室等等<strong>收集用户输入</strong>的地方，都可能被注入xss代码，都存在遭受xss的风险，只要没有对用户的输入进行严格过滤，就会被xss。当攻击者可以将恶意代码注入到服务器中，我们就认为其存在xss漏洞。</p>
+<p> 5）<strong>一般的攻击过程</strong>：</p>
+<ul>
+<li>  攻击者将恶意代码注入到服务器中（如论坛、留言板、邮件等）；</li>
+<li>  用户在没有防备的情况下访问了被注入了恶意代码的服务器；</li>
+<li>  服务器将含有恶意代码的网页响应给客户端；</li>
+<li>  在客户端浏览器中触发JS恶意代码。</li>
+</ul>
+</li>
+<li><h4 id="XSS漏洞危害"><a href="#XSS漏洞危害" class="headerlink" title="XSS漏洞危害"></a>XSS漏洞危害</h4><p> 恶意用户利用xss代码攻击成功后，可能会得到很高的权限，XSS漏洞主要有以下危害：<br> （1）盗取各种用户账号；<br> （2）窃取用户Cookie资料，冒充用户身份进入网站；<br> （3）劫持用户会话，执行任意操作；是指操作用户浏览器；<br> （4）刷流量，执行弹窗广告；<br> （5）传播蠕虫病毒。<br> 等等</p>
+</li>
+<li><h4 id="XSS漏洞分类"><a href="#XSS漏洞分类" class="headerlink" title="XSS漏洞分类"></a>XSS漏洞分类</h4><p> XSS漏洞大概可以分为三个类型：反射型XSS、存储型XSS和DOM型XSS。</p>
+<h5 id="3-1-反射型XSS"><a href="#3-1-反射型XSS" class="headerlink" title="3.1 反射型XSS"></a>3.1 反射型XSS</h5><p> <strong>定义</strong>：反射型XSS是非持久性、参数型跨站脚本。反射型XSS的JS代码在web应用的参数（变量）中，如搜索框的反射型XSS。</p>
+<p> <strong>特点</strong>：这种攻击方式往往具有一次性。</p>
+<p> <strong>攻击方式</strong>：攻击者通过电子邮件等方式将包含xss代码的恶意链接发送给目标用户。当目标用户访问该链接时，服务器接收该目标用户的请求并进行处理，然后服务器把带有xss代码的数据发送给目标用户的浏览器，浏览器解析这段带有xss代码的恶意脚本后，就会触发xss漏洞。</p>
+<h6 id="3-2-存储型XSS"><a href="#3-2-存储型XSS" class="headerlink" title="3.2 存储型XSS"></a>3.2 存储型XSS</h6><p> <strong>定义</strong>：存储型XSS是持久性跨站脚本，持久性体现在xss代码不是在某个参数（变量）中，而是写进数据库或文件等可以永久保存数据的介质中。存储型XSS通常发生在留言板等地方。我们在留言板位置留言，将恶意代码写进数据库中。</p>
+<p> <strong>特点</strong>：攻击脚本将被永久地存放在目标服务器的数据库或文件中，具有很高的隐蔽性。</p>
+<p> <strong>攻击方式</strong>：这种攻击多见于论坛、博客和留言板，攻击者在发帖的过程中，将恶意脚本连同正常信息一起注入帖子的内容中。随着帖子被服务器存储下来，恶意脚本也永久地被存放在服务器的后端存储器中 。 当其他用户浏览这个被注入了恶意脚本的帖子时，恶意脚本会在他们的浏览器中得到执行 。所以需要浏览器从服务器载入恶意的xss代码，才能真正触发xss。</p>
+<p> <strong>反射型与存储型xss对比</strong>：<br> 如果我们能够谨慎对待不明链接，那么反射型XSS攻击将没有多大作为，而存储型XSS则不同，由于它注入在一些我们信任的页面，因此无论我们多么小心，都难免会受到攻击。</p>
+<h5 id="3-3-DOM型XSS"><a href="#3-3-DOM型XSS" class="headerlink" title="3.3 DOM型XSS"></a>3.3 DOM型XSS</h5><h6 id="3-3-1-节点树模型"><a href="#3-3-1-节点树模型" class="headerlink" title="3.3.1 节点树模型"></a>3.3.1 节点树模型</h6><p> DOM全称Document Object Model，中文为文档对象模型，使用DOM可以使程序和脚本能够动态访问和更新文档的内容、结构及样式 。<br> HTML 的标签都是节点，而这些节点组成了 DOM 的整体结构一一节点树。通过HTML DOM，树中的所有节点均可通过JavaScript进行访问 。 所有HTML元素（节点）均可被修改，也可以创建或删除节点 。</p>
+<h6 id="3-3-2-DOM型XSS"><a href="#3-3-2-DOM型XSS" class="headerlink" title="3.3.2 DOM型XSS"></a>3.3.2 DOM型XSS</h6><p> <strong>定义</strong>：DOM型XSS比较特殊。owasp关于DOM型XSS的定义是基于DOM的XSS是一种XSS攻击，其中攻击的payload由于修改受害者浏览器页面的DOM树而执行的。其特殊的地方就是payload在浏览器本地修改DOM树而执行，并不会传到服务器上，这也就使得DOM型XSS比较难以检测。</p>
+<p> 通过<a target="_blank" rel="noopener" href="https://www.runoob.com/htmldom/htmldom-tutorial.html">菜鸟教程</a>的一张图片来了解一下DOM树</p>
+<p> <img src="./java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif" srcset="/img/loading.gif" lazyload alt="DOMTREE"></p>
+ <img src="/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-XSS注入">
+
+<p> <strong>网页的生成及修改</strong>：</p>
+<p> 在网站页面中有许多元素，当页面到达浏览器时，浏览器会为页面创建一个顶级的Document object文档对象，接着生成各个子文档对象，每个页面元素对应一个文档对象，每个文档对象包含属性、方法和事件 。</p>
+<p> 可以通过JS脚本对文档对象进行编辑，从而修改页面的元素 。 也就是说，客户端的脚本程序可以通过DOM动态修改页面内容，从客户端获取DOM中的数据并在本地执行。由于DOM是在客户端修改节点的，所以基于DOM型的xss漏洞不需要与服务器端交互，它只发生在客户端处理数据的阶段。<br> <strong>攻击方式</strong>：用户请求一个经过专门设计的URL，它由攻击者提交，而且其中包含XSS代码。服务器的响应不会以任何形式包含攻击者的脚本。 当用户的浏览器处理这个响应时， DOM对象就会处理XSS代码，导致存在XSS漏洞 。</p>
+<p> PS:关于漏洞验证与漏洞利用方向，可以参考之前记录的一篇文章<a target="_blank" rel="noopener" href="https://cayce-atlantis.github.io/2021/05/09/XSS%E6%94%BB%E5%87%BB%E9%80%9A%E5%85%B3%E4%B9%8B%E8%B7%AF/">XSS攻击通关之路</a></p>
+</li>
+</ol>
+<h3 id="漏洞代码"><a href="#漏洞代码" class="headerlink" title="漏洞代码"></a>漏洞代码</h3><ol>
+<li><h4 id="反射型XSS"><a href="#反射型XSS" class="headerlink" title="反射型XSS"></a>反射型XSS</h4> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//1. </span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Vuln Code.</span><br><span class="hljs-comment">     * ReflectXSS</span><br><span class="hljs-comment">     * http://localhost:8080/xss/reflect?xss=&lt;script&gt;alert(1)&lt;/script&gt;</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> xss unescape string</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@RequestMapping(&quot;/reflect&quot;)</span><br>    <span class="hljs-meta">@ResponseBody</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">reflect</span><span class="hljs-params">(String xss)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> xss;<br>    &#125;<br><span class="hljs-comment">/**</span><br><span class="hljs-comment">	客户端传入xss参数，服务端获取值后直接返回</span><br><span class="hljs-comment">*/</span><br><br><span class="hljs-comment">//2.</span><br><span class="hljs-meta">@WebServlet(&quot;/demo&quot;)</span><br><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">xssServlet</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HttpServlet</span> </span>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doPost</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>        <span class="hljs-keyword">this</span>.doGet(request,response);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doGet</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br><br>        response.setContentType(<span class="hljs-string">&quot;text/html&quot;</span>);<span class="hljs-comment">// 设置响应类型</span><br>        String content = request.getParameter(<span class="hljs-string">&quot;content&quot;</span>);  <span class="hljs-comment">//获取content传参数据</span><br>        request.setAttribute(<span class="hljs-string">&quot;content&quot;</span>, content);  <span class="hljs-comment">//content共享到request域</span><br>        request.getRequestDispatcher(<span class="hljs-string">&quot;/WEB-INF/pages/xss.jsp&quot;</span>).forward(request, response);  <span class="hljs-comment">//转发到xxs.jsp页面中</span><br><br>    &#125;<br>&#125;<br><br><span class="hljs-comment">//xss.jsp代码：</span><br>  &lt;%@ page contentType=<span class="hljs-string">&quot;text/html;charset=UTF-8&quot;</span> language=<span class="hljs-string">&quot;java&quot;</span> %&gt;<br>&lt;html&gt;<br>&lt;head&gt;<br>    &lt;title&gt;Title&lt;/title&gt;<br>    $&#123;requestScope.content&#125;<br>&lt;/head&gt;<br>&lt;body&gt;<br><br>&lt;/body&gt;<br>&lt;/html&gt;<br>  <br><span class="hljs-comment">/**</span><br><span class="hljs-comment">	和上面的情况一样，但是中间加了共享到request域，转发到目标页面，EL表达式获取直接输出</span><br><span class="hljs-comment">*/</span><br></code></pre></td></tr></table></figure></li>
+<li><h4 id="存储型XSS"><a href="#存储型XSS" class="headerlink" title="存储型XSS"></a>存储型XSS</h4> <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//1.</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Vul Code.</span><br><span class="hljs-comment">     * StoredXSS Step1</span><br><span class="hljs-comment">     * http://localhost:8080/xss/stored/store?xss=&lt;script&gt;alert(1)&lt;/script&gt;</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> xss unescape string</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@RequestMapping(&quot;/stored/store&quot;)</span><br>    <span class="hljs-meta">@ResponseBody</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">store</span><span class="hljs-params">(String xss, HttpServletResponse response)</span> </span>&#123;<br>        Cookie cookie = <span class="hljs-keyword">new</span> Cookie(<span class="hljs-string">&quot;xss&quot;</span>, xss);<br>        response.addCookie(cookie);<br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Set param into cookie&quot;</span>;<br>    &#125;<br><span class="hljs-comment">/**</span><br><span class="hljs-comment">	客户端传入xss参数，服务端获取值后传入cookie的XSS键返回给客户端</span><br><span class="hljs-comment">*/</span><br><br><br> <span class="hljs-comment">/**</span><br><span class="hljs-comment">     * Vul Code.</span><br><span class="hljs-comment">     * StoredXSS Step2</span><br><span class="hljs-comment">     * http://localhost:8080/xss/stored/show</span><br><span class="hljs-comment">     *</span><br><span class="hljs-comment">     * <span class="hljs-doctag">@param</span> xss unescape string</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@RequestMapping(&quot;/stored/show&quot;)</span><br>    <span class="hljs-meta">@ResponseBody</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">show</span><span class="hljs-params">(<span class="hljs-meta">@CookieValue(&quot;xss&quot;)</span> String xss)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> xss;<br>    &#125;<br><span class="hljs-comment">/**</span><br><span class="hljs-comment">	前面已经将XSS写入Cookie,同一浏览器访问http://localhost:8080/xss/stored/show，服务端获取Cookie中XSS的值并返回客户端</span><br><span class="hljs-comment">*/</span><br><br><br><span class="hljs-comment">//2.</span><br><span class="hljs-comment">//输入点</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">StoreXss</span><span class="hljs-params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>        <span class="hljs-comment">// TODO Auto-generated method stub</span><br><br>        String name = req.getParameter(<span class="hljs-string">&quot;name&quot;</span>);<br>        String mail = req.getParameter(<span class="hljs-string">&quot;mail&quot;</span>);<br>        String message = req.getParameter(<span class="hljs-string">&quot;message&quot;</span>);<br>        <span class="hljs-keyword">if</span>(!name.equals(<span class="hljs-keyword">null</span>) &amp;&amp; !mail.equals(<span class="hljs-keyword">null</span>) &amp;&amp; !message.equals(<span class="hljs-keyword">null</span>))&#123;<br><br>            MessageInfoService msginfo = <span class="hljs-keyword">new</span> MessageInfoServiceImpl();<br>            msginfo.MessageInfoStoreService(name, mail, message);<br>          <br>            resp.getWriter().flush();<br>            resp.getWriter().close();<br>        &#125;<br>    &#125;<br><span class="hljs-comment">//控制器</span><br><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">ShowMessage</span><span class="hljs-params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="hljs-keyword">throws</span> ServletException, IOException </span>&#123;<br>				<br>        MessageInfoService msginfo = <span class="hljs-keyword">new</span> MessageInfoServiceImpl();<br>				<span class="hljs-comment">//MessageInfoShowService主要是用于实例化MessageInfoDaoImpl()</span><br>        List&lt;MessageInfo&gt; msg = msginfo.MessageInfoShowService();<br>        <span class="hljs-keyword">if</span>( msg != <span class="hljs-keyword">null</span>)&#123;<br>            req.setAttribute(<span class="hljs-string">&quot;msg&quot;</span>, msg);<br>            req.getRequestDispatcher(<span class="hljs-string">&quot;/message.jsp&quot;</span>).forward(req, resp);<br>            <span class="hljs-keyword">return</span> ;<br>        &#125;<br>    &#125;<br><br><span class="hljs-comment">//MessageInfoShowService()</span><br><span class="hljs-keyword">try</span> &#123;<br>            ....<br>						<span class="hljs-comment">//主要执行的是从message表中查询所有数据，然后将 name、mail、message 的值加到 messageinfo List 中，最后返回给 servlet 层。</span><br>            String sql = <span class="hljs-string">&quot;select * from message&quot;</span>;<br>            ps = conns.prepareStatement(sql);<br>            rs = ps.executeQuery();<br>            messageinfo = <span class="hljs-keyword">new</span> ArrayList&lt;MessageInfo&gt;();<br>            <span class="hljs-keyword">while</span>(rs.next())&#123;<br>                MessageInfo msg = <span class="hljs-keyword">new</span> MessageInfo();<br><br>                msg.setName(rs.getString(<span class="hljs-string">&quot;name&quot;</span>));<br>                msg.setMail(rs.getString(<span class="hljs-string">&quot;mail&quot;</span>));<br>                msg.setMessage(rs.getString(<span class="hljs-string">&quot;message&quot;</span>));<br><br>                messageinfo.add(msg);<br>            &#125;<br><br>        ....<br><br>        <span class="hljs-keyword">return</span> messageinfo;<br>    &#125;<br>&#125;<br><span class="hljs-comment">/**</span><br><span class="hljs-comment">	return messageinfo; 把查询的name、mail、message 的值返回给List&lt;MessageInfo&gt; msg</span><br><span class="hljs-comment">	req.getRequestDispatcher(&quot;/message.jsp&quot;).forward(req, resp); 转发到 message.jsp</span><br><span class="hljs-comment">*/</span> <br><br><br>&lt;%<br>  <span class="hljs-comment">//直接获取msg输出</span><br>    List&lt;MessageInfo&gt; msginfo = (ArrayList&lt;MessageInfo&gt;)request.getAttribute(<span class="hljs-string">&quot;msg&quot;</span>);<br>    <span class="hljs-keyword">for</span>(MessageInfo m:msginfo)&#123;<br> %&gt;<br>&lt;table&gt;<br><br>    &lt;tr&gt;&lt;td class=&quot;klytd&quot;&gt; 留言人：&lt;/td&gt;<br>        &lt;td class =&quot;hvttd&quot;&gt;　&lt;%=m.getName() %&gt;&lt;/td&gt;<br>    &lt;/tr&gt; <br>    &lt;tr&gt;&lt;td class=&quot;klytd&quot;&gt; e-mail：&lt;/td&gt;&lt;td class =&quot;hvttd&quot;&gt;　&lt;%=m.getMail() %&gt;&lt;/td&gt;<br>        &lt;/tr&gt;<br>    &lt;tr&gt;&lt;td class=&quot;klytd&quot;&gt; 内容：&lt;/td&gt;&lt;td class =&quot;hvttd&quot;&gt;　&lt;%=m.getMessage() %&gt;&lt;/td&gt;&lt;/tr&gt;<br><br>&lt;/table&gt; &lt;% &#125; %&gt;<br>&lt;/div&gt;<br></code></pre></td></tr></table></figure></li>
+<li><h4 id="安全代码"><a href="#安全代码" class="headerlink" title="安全代码"></a>安全代码</h4> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//1.定义转义输入字符函数</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">     * safe Code.</span><br><span class="hljs-comment">     * http://localhost:8080/xss/safe</span><br><span class="hljs-comment">     */</span><br>    <span class="hljs-meta">@RequestMapping(&quot;/safe&quot;)</span><br>    <span class="hljs-meta">@ResponseBody</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">safe</span><span class="hljs-params">(String xss)</span> </span>&#123;<br>        <span class="hljs-keyword">return</span> encode(xss);<br>    &#125;<br><br>    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> String <span class="hljs-title">encode</span><span class="hljs-params">(String origin)</span> </span>&#123;<br>        origin = StringUtils.replace(origin, <span class="hljs-string">&quot;&amp;&quot;</span>, <span class="hljs-string">&quot;&amp;amp;&quot;</span>);<br>        origin = StringUtils.replace(origin, <span class="hljs-string">&quot;&lt;&quot;</span>, <span class="hljs-string">&quot;&amp;lt;&quot;</span>);<br>        origin = StringUtils.replace(origin, <span class="hljs-string">&quot;&gt;&quot;</span>, <span class="hljs-string">&quot;&amp;gt;&quot;</span>);<br>        origin = StringUtils.replace(origin, <span class="hljs-string">&quot;\&quot;&quot;</span>, <span class="hljs-string">&quot;&amp;quot;&quot;</span>);<br>        origin = StringUtils.replace(origin, <span class="hljs-string">&quot;&#x27;&quot;</span>, <span class="hljs-string">&quot;&amp;#x27;&quot;</span>);<br>        origin = StringUtils.replace(origin, <span class="hljs-string">&quot;/&quot;</span>, <span class="hljs-string">&quot;&amp;#x2F;&quot;</span>);<br>        <span class="hljs-keyword">return</span> origin;<br>    &#125;<br><br><br><br><span class="hljs-comment">//2.全局过滤器过滤</span><br>&lt;filter&gt;  <br>        &lt;filter-name&gt;XssSafe&lt;/filter-name&gt;  <br>        &lt;filter-<span class="hljs-class"><span class="hljs-keyword">class</span>&gt;<span class="hljs-title">XssFilter</span>&lt;/<span class="hljs-title">filter</span>-<span class="hljs-title">class</span>&gt;  </span><br><span class="hljs-class">    &lt;/<span class="hljs-title">filter</span>&gt;  </span><br><span class="hljs-class">    &lt;<span class="hljs-title">filter</span>-<span class="hljs-title">mapping</span>&gt;  </span><br><span class="hljs-class">        &lt;<span class="hljs-title">filter</span>-<span class="hljs-title">name</span>&gt;<span class="hljs-title">XssSafe</span>&lt;/<span class="hljs-title">filter</span>-<span class="hljs-title">name</span>&gt;  </span><br><span class="hljs-class">        &lt;<span class="hljs-title">url</span>-<span class="hljs-title">pattern</span>&gt;/\*&lt;/<span class="hljs-title">url</span>-<span class="hljs-title">pattern</span>&gt;   //格式问题加了个转移字符 ‘/*’</span><br><span class="hljs-class">    &lt;/<span class="hljs-title">filter</span>-<span class="hljs-title">mapping</span>&gt;</span><br><span class="hljs-class">    </span><br><span class="hljs-class">//过滤器的内容</span><br><span class="hljs-class">//<span class="hljs-title">XssFilter</span>实现：</span><br><span class="hljs-class"></span><br><span class="hljs-class"><span class="hljs-title">public</span> <span class="hljs-title">class</span> <span class="hljs-title">XssFilter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title">Filter</span> </span>&#123;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">init</span><span class="hljs-params">(FilterConfig filterConfig)</span> <span class="hljs-keyword">throws</span> ServletException </span>&#123;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">doFilter</span><span class="hljs-params">(ServletRequest request, ServletResponse response,</span></span><br><span class="hljs-function"><span class="hljs-params">            FilterChain chain)</span> <span class="hljs-keyword">throws</span> IOException, ServletException </span>&#123;<br>        chain.doFilter(<span class="hljs-keyword">new</span> XssHttpServletRequestWrapper((HttpServletRequest) request), response);<br>    &#125;<br><br>&#125;<br><br><span class="hljs-comment">//XssHttpServletRequestWrapper实现</span><br><br><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">XssHttpServletRequestWrapper</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">HttpServletRequestWrapper</span> </span>&#123;<br><br>    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">XssHttpServletRequestWrapper</span><span class="hljs-params">(HttpServletRequest request)</span> </span>&#123;<br>        <span class="hljs-keyword">super</span>(request);<br>    &#125;<br><br>    <span class="hljs-meta">@SuppressWarnings(&quot;rawtypes&quot;)</span><br>    <span class="hljs-keyword">public</span> Map&lt;String,String[]&gt; getParameterMap()&#123;<br>        Map&lt;String,String[]&gt; request_map = <span class="hljs-keyword">super</span>.getParameterMap();<br>        Iterator iterator = request_map.entrySet().iterator();<br>        <span class="hljs-keyword">while</span>(iterator.hasNext())&#123;<br>            Map.Entry me = (Map.Entry)iterator.next();<br>            String[] values = (String[])me.getValue();<br>            <span class="hljs-keyword">for</span>(<span class="hljs-keyword">int</span> i = <span class="hljs-number">0</span> ; i &lt; values.length ; i++)&#123;<br>                values[i] = xssClean(values[i]);<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-keyword">return</span> request_map;<br>    &#125;<br>     <span class="hljs-keyword">public</span> String[] getParameterValues(String paramString)<br>      &#123;<br>        String[] arrayOfString1 = <span class="hljs-keyword">super</span>.getParameterValues(paramString);<br>        <span class="hljs-keyword">if</span> (arrayOfString1 == <span class="hljs-keyword">null</span>)<br>          <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;<br>        <span class="hljs-keyword">int</span> i = arrayOfString1.length;<br>        String[] arrayOfString2 = <span class="hljs-keyword">new</span> String[i];<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> j = <span class="hljs-number">0</span>; j &lt; i; j++)&#123;<br>            arrayOfString2[j] = xssClean(arrayOfString1[j]);<br>        &#125;<br>        <span class="hljs-keyword">return</span> arrayOfString2;<br>      &#125;<br><br>      <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">getParameter</span><span class="hljs-params">(String paramString)</span></span><br><span class="hljs-function">      </span>&#123;<br>        String str = <span class="hljs-keyword">super</span>.getParameter(paramString);<br>        <span class="hljs-keyword">if</span> (str == <span class="hljs-keyword">null</span>)<br>          <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;<br>        <span class="hljs-keyword">return</span> xssClean(str);<br>      &#125;<br><br>      <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">getHeader</span><span class="hljs-params">(String paramString)</span></span><br><span class="hljs-function">      </span>&#123;<br>        String str = <span class="hljs-keyword">super</span>.getHeader(paramString);<br>        <span class="hljs-keyword">if</span> (str == <span class="hljs-keyword">null</span>)<br>          <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;<br>        str = str.replaceAll(<span class="hljs-string">&quot;\r|\n&quot;</span>, <span class="hljs-string">&quot;&quot;</span>);<br>        <span class="hljs-keyword">return</span> xssClean(str);<br>      &#125;<br><br><br>      <span class="hljs-function"><span class="hljs-keyword">private</span> String <span class="hljs-title">xssClean</span><span class="hljs-params">(String value)</span> </span>&#123;<br>        <span class="hljs-comment">//ClassLoaderUtils.getResourceAsStream(&quot;classpath:antisamy-slashdot.xml&quot;, XssHttpServletRequestWrapper.class)</span><br>        <span class="hljs-keyword">if</span> (value != <span class="hljs-keyword">null</span>) &#123;<br>            <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> It&#x27;s highly recommended to use the ESAPI library and</span><br>            <span class="hljs-comment">// uncomment the following line to</span><br>            <span class="hljs-comment">// avoid encoded attacks.</span><br>            <span class="hljs-comment">// value = encoder.canonicalize(value);</span><br>            value = value.replaceAll(<span class="hljs-string">&quot;\0&quot;</span>, <span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid anything between script tags</span><br>            Pattern scriptPattern = Pattern.compile(<span class="hljs-string">&quot;&lt;script&gt;(.*?)&lt;/script&gt;&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid anything in a src=&#x27;...&#x27; type of expression</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;src[\r\n]*=[\r\n]*\\\&#x27;(.*?)\\\&#x27;&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE<br>                            | Pattern.DOTALL);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br>            <span class="hljs-comment">// Avoid anything in a href=&#x27;...&#x27; type of expression</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;href[\r\n]*=[\r\n]*\\\&quot;(.*?)\\\&quot;&quot;</span>,<br>                                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE<br>                                        | Pattern.DOTALL);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br><br>            <span class="hljs-comment">// Remove any lonesome &lt;/script&gt; tag</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;&lt;/script&gt;&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Remove any lonesome &lt;script ...&gt; tag</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;&lt;script(.*?)&gt;&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE<br>                            | Pattern.DOTALL);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid eval(...) expressions</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;eval\\((.*?)\\)&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE<br>                            | Pattern.DOTALL);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid expression(...) expressions</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;expression\\((.*?)\\)&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE<br>                            | Pattern.DOTALL);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid javascript:... expressions</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;javascript:&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid vbscript:... expressions</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;vbscript:&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br><br>            <span class="hljs-comment">// Avoid onload= expressions</span><br>            scriptPattern = Pattern.compile(<span class="hljs-string">&quot;onload(.*?)=&quot;</span>,<br>                    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE<br>                            | Pattern.DOTALL);<br>            value = scriptPattern.matcher(value).replaceAll(<span class="hljs-string">&quot;&quot;</span>);<br>        &#125;  <br>          <span class="hljs-keyword">return</span> value; <br>          &#125;<br>&#125;<br><br><span class="hljs-comment">//3.使用工具类xssProtect</span><br><span class="hljs-comment">/**</span><br><span class="hljs-comment">	这是谷歌提供的一个用于过滤来自用户输入字段的XSS攻击的Java库</span><br><span class="hljs-comment">	项目中需要引入 xssProtect-0.1.jar、antlr-3.0.1.jar、antlr-runtime-3.0.1.jar等3个 jar 包</span><br><span class="hljs-comment">*/</span><br><br>protectedAgainstXSS（String html）&#123;StringReader reader = <span class="hljs-keyword">new</span> StringReader（html）; StringWriter writer = <span class="hljs-keyword">new</span> StringWriter（）;<br>  <span class="hljs-keyword">try</span> &#123;<br>      <span class="hljs-comment">// 从“ html”变量解析传入的字符串</span><br>      HTMLParser.process( reader, writer, <span class="hljs-keyword">new</span> XSSFilter(), <span class="hljs-keyword">true</span> );<br><br>      <span class="hljs-comment">// 返回经过解析和处理的字符串</span><br>      <span class="hljs-keyword">return</span> writer.toString();<br>  &#125; <span class="hljs-keyword">catch</span> (HandlingException e) &#123;<br>  &#125;<br>&#125;<br><span class="hljs-comment">//具体的使用方式可以参考：https://www.iteye.com/blog/liuzidong-1744023</span><br></code></pre></td></tr></table></figure>
+
+<p> <strong>找XSS的方法</strong></p>
+ <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs TEXT">1.扫描器直接扫描，再去回溯<br>2.拿到一个项目主要是去看看，这个项目有没有一些过滤之类的组件。<br>  假设没有找到类似的过滤组件，则去随机找几个点去看看是不是存在XSS，<br></code></pre></td></tr></table></figure>
+
+</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/" class="category-chain-item">代码审计</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/xss/">#xss</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>java源代码审计-XSS注入</div>
+      <div>http://example.com/2023/02/05/java源代码审计-XSS注入/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Cayce</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>February 5, 2023</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/02/02/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-SQL%E6%B3%A8%E5%85%A5/" title="java源代码审计-SQL注入">
+                        <span class="hidden-mobile">java源代码审计-SQL注入</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>Table of Contents</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Blog</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>By Cayce</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
