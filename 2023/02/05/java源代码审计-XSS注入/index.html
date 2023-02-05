@@ -23,14 +23,13 @@
 <meta property="og:site_name" content="Atlantis">
 <meta property="og:description" content="XSS漏洞基础 概述 XSS被称为跨站脚本攻击（Cross Site Scripting），由于和层叠样式表（Cascading Style Sheets，CSS）重名，改为XSS。  主要基于JavaScript语言进行恶意攻击，因为js非常灵活操作html、css、浏览器。  1）定义&#x2F;原理：跨站脚本（Cross-Site Scripting），本应该缩写为CSS，但是该缩写已被层叠样式脚本C">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
 <meta property="og:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
 <meta property="article:published_time" content="2023-02-05T07:42:05.000Z">
-<meta property="article:modified_time" content="2023-02-05T08:17:38.431Z">
+<meta property="article:modified_time" content="2023-02-05T08:33:45.158Z">
 <meta property="article:author" content="Cayce">
 <meta property="article:tag" content="xss">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
+<meta name="twitter:image" content="http://example.com/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif">
   
   
   
@@ -155,18 +154,6 @@
               <a class="nav-link" href="/tags/">
                 <i class="iconfont icon-tags-fill"></i>
                 <span>Tags</span>
-              </a>
-            </li>
-          
-        
-          
-          
-          
-          
-            <li class="nav-item">
-              <a class="nav-link" href="/about/">
-                <i class="iconfont icon-user-fill"></i>
-                <span>About</span>
               </a>
             </li>
           
@@ -306,7 +293,6 @@
 <h5 id="3-3-DOM型XSS"><a href="#3-3-DOM型XSS" class="headerlink" title="3.3 DOM型XSS"></a>3.3 DOM型XSS</h5><h6 id="3-3-1-节点树模型"><a href="#3-3-1-节点树模型" class="headerlink" title="3.3.1 节点树模型"></a>3.3.1 节点树模型</h6><p> DOM全称Document Object Model，中文为文档对象模型，使用DOM可以使程序和脚本能够动态访问和更新文档的内容、结构及样式 。<br> HTML 的标签都是节点，而这些节点组成了 DOM 的整体结构一一节点树。通过HTML DOM，树中的所有节点均可通过JavaScript进行访问 。 所有HTML元素（节点）均可被修改，也可以创建或删除节点 。</p>
 <h6 id="3-3-2-DOM型XSS"><a href="#3-3-2-DOM型XSS" class="headerlink" title="3.3.2 DOM型XSS"></a>3.3.2 DOM型XSS</h6><p> <strong>定义</strong>：DOM型XSS比较特殊。owasp关于DOM型XSS的定义是基于DOM的XSS是一种XSS攻击，其中攻击的payload由于修改受害者浏览器页面的DOM树而执行的。其特殊的地方就是payload在浏览器本地修改DOM树而执行，并不会传到服务器上，这也就使得DOM型XSS比较难以检测。</p>
 <p> 通过<a target="_blank" rel="noopener" href="https://www.runoob.com/htmldom/htmldom-tutorial.html">菜鸟教程</a>的一张图片来了解一下DOM树</p>
-<p> <img src="./java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif" srcset="/img/loading.gif" lazyload alt="DOMTREE"></p>
  <img src="/2023/02/05/java%E6%BA%90%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1-XSS%E6%B3%A8%E5%85%A5/DOMTREE.gif" srcset="/img/loading.gif" lazyload class="" title="java源代码审计-XSS注入">
 
 <p> <strong>网页的生成及修改</strong>：</p>
